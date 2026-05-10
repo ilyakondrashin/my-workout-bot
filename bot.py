@@ -3,7 +3,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppI
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 BOT_TOKEN = "8796589455:AAEJTy8MnSNeaKzhP5T4Wxhj60CKYZzMiIU"
-WEBAPP_URL = "https://ТВОЙ_ПРОЕКТ.up.railway.app"  # Заменить после деплоя
+WEBAPP_URL = "https://heroic-eagerness-production-ca5b.up.railway.app"
 
 logging.basicConfig(level=logging.INFO)
 
@@ -21,7 +21,4 @@ def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     print("🤖 Бот запущен!")
-    app.run_polling(drop_pending_updates=True)
-
-if __name__ == "__main__":
-    main()
+    app.run_polling(drop_pending_upd
