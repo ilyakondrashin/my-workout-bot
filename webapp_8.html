@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Мои тренировки</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--tg-theme-bg-color,#f2f2f7);color:var(--tg-theme-text-color,#111);overscroll-behavior:none;}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+.header{background:var(--tg-theme-secondary-bg-color,#fff);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid rgba(0,0,0,0.08);position:sticky;top:0;z-index:10;}
+.header-title{font-size:16px;font-weight:500;}
+.header-sub{font-size:11px;opacity:0.5;margin-top:2px;}
+.content{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
+.nav{display:grid;grid-template-columns:repeat(2,1fr);border-top:0.5px solid rgba(0,0,0,0.08);background:var(--tg-theme-secondary-bg-color,#fff);position:sticky;bottom:0;}
+.nav-btn{padding:10px 4px 8px;text-align:center;cursor:pointer;border:none;background:none;color:var(--tg-theme-hint-color,#888);font-size:10px;}
+.nav-btn.active{color:var(--tg-theme-link-color,#2AABEE);}
+.nav-icon{font-size:22px;display:block;margin-bottom:2px;}
+.sec{display:none;flex-direction:column;gap:12px;}
+.sec.active{display:flex;}
+.view{display:none;flex-direction:column;gap:10px;}
+.view.active{display:flex;}
+.card{background:var(--tg-theme-secondary-bg-color,#fff);border-radius:12px;padding:14px;}
+.card-title{font-size:11px;font-weight:500;opacity:0.5;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px;}
+
+.cat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+.cat-card{background:var(--tg-theme-secondary-bg-color,#fff);border-radius:12px;padding:14px 12px;cursor:pointer;border:0.5px solid rgba(0,0,0,0.06);}
+.cat-icon{font-size:26px;margin-bottom:8px;}
+.cat-name{font-size:13px;font-weight:500;}
+.cat-count{font-size:11px;opacity:0.5;margin-top:3px;}
+.back-btn{display:flex;align-items:center;gap:6px;color:var(--tg-theme-link-color,#2AABEE);font-size:13px;cursor:pointer;background:none;border:none;padding:0;}
+.workout-list{display:flex;flex-direction:column;gap:8px;}
+.workout-item{background:var(--tg-theme-secondary-bg-color,#fff);border-radius:10px;padding:12px 14px;cursor:pointer;border:0.5px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;}
+.workout-name{font-size:13px;font-weight:500;}
+.workout-desc{font-size:11px;opacity:0.5;margin-top:3px;}
+.workout-arrow{opacity:0.25;font-size:16px;}
+
+.video-wrap{background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;width:100%;}
+.video-wrap iframe{width:100%;height:100%;border:none;}
+.detail-card{background:var(--tg-theme-secondary-bg-color,#fff);border-radius:12px;padding:14px;}
+.detail-title{font-size:14px;font-weight:500;margin-bottom:4px;}
+.detail-desc{font-size:12px;opacity:0.6;line-height:1.5;margin-bottom:12px;}
+.private-note{font-size:11px;opacity:0.6;background:rgba(0,0,0,0.04);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.5;}
+.open-btn{width:100%;padding:12px;background:var(--tg-theme-link-color,#2AABEE);border:none;border-radius:10px;color:#fff;font-size:14px;font-weight:500;cursor:pointer;}
+.done-btn{width:100%;padding:12px;background:rgba(42,171,238,0.1);border:0.5px solid rgba(42,171,238,0.25);border-radius:10px;color:var(--tg-theme-link-color,#2AABEE);font-size:14px;font-weight:500;cursor:pointer;}
+.done-btn.done{background:rgba(39,174,96,0.1);border-color:rgba(39,174,96,0.25);color:#27ae60;}
+
+.stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.stat-box{background:var(--tg-theme-secondary-bg-color,#fff);border-radius:10px;padding:12px 8px;text-align:center;}
+.stat-lbl{font-size:9px;opacity:0.5;margin-bottom:4px;}
+.stat-val{font-size:20px;font-weight:500;color:var(--tg-theme-link-color,#2AABEE);}
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.month-nav-btn{background:none;border:none;cursor:pointer;color:var(--tg-theme-link-color,#2AABEE);font-size:22px;padding:0 4px;line-height:1;}
+.month-label{font-size:14px;font-weight:500;}
+.cal-daynames{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;}
+.cal-dayname{font-size:10px;opacity:0.4;text-align:center;padding:2px 0;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-cell{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;}
+.hm-0{background:rgba(0,0,0,0.05);}
+.hm-1{background:#B5D4F4;color:#185FA5;}
+.hm-2{background:#378ADD;color:#fff;}
+.hm-3{background:#0C447C;color:#fff;}
+.is-today{outline:2px solid var(--tg-theme-link-color,#2AABEE);outline-offset:1px;}
+.other-m{opacity:0.2;}
+.hm-legend{display:flex;align-items:center;gap:5px;margin-top:8px;justify-content:flex-end;}
+.hm-legend span{font-size:10px;opacity:0.5;}
+.hm-lc{width:12px;height:12px;border-radius:2px;}
+.tooltip-box{background:rgba(0,0,0,0.04);border-radius:8px;padding:8px 12px;font-size:12px;opacity:0.7;min-height:34px;display:flex;align-items:center;margin-top:8px;}
+.log-list{display:flex;flex-direction:column;gap:6px;}
+.log-item{border-radius:0 8px 8px 0;padding:8px 12px;border-left:3px solid #378ADD;background:rgba(0,0,0,0.03);}
+.log-date{font-size:10px;opacity:0.5;margin-bottom:2px;}
+.log-text{font-size:12px;}
+.top-item{margin-bottom:8px;}
+.top-row{display:flex;justify-content:space-between;margin-bottom:4px;}
+.top-name{font-size:12px;}
+.top-cnt{font-size:12px;font-weight:500;color:var(--tg-theme-link-color,#2AABEE);}
+.top-bar{background:rgba(0,0,0,0.06);border-radius:4px;height:5px;overflow:hidden;}
+.top-fill{height:100%;background:#378ADD;border-radius:4px;}
+.empty{font-size:12px;opacity:0.4;text-align:center;padding:12px 0;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="header-title" id="htitle">Мои тренировки</div>
+      <div class="header-sub" id="hsub">Выбери категорию</div>
+    </div>
+    <span style="font-size:22px;">💪</span>
+  </div>
+
+  <div class="content">
+
+    <!-- КАТАЛОГ -->
+    <div id="sec-cat" class="sec active">
+      <div id="v-cats" class="view active">
+        <div class="cat-grid">
+          <div class="cat-card" onclick="openCat('breath')"><div class="cat-icon">🌬️</div><div class="cat-name">Дыхание</div><div class="cat-count">1 практика</div></div>
+          <div class="cat-card" onclick="openCat('gymn')"><div class="cat-icon">🤸</div><div class="cat-name">Гимнастика</div><div class="cat-count">2 практики</div></div>
+          <div class="cat-card" onclick="openCat('qigong')"><div class="cat-icon">☯️</div><div class="cat-name">Цигун</div><div class="cat-count">4 практики</div></div>
+          <div class="cat-card" onclick="openCat('yoga')"><div class="cat-icon">🧘</div><div class="cat-name">Йога</div><div class="cat-count">1 практика</div></div>
+          <div class="cat-card" onclick="openCat('face')"><div class="cat-icon">💆</div><div class="cat-name">Фейсбилдинг</div><div class="cat-count">48 видео</div></div>
+          <div class="cat-card" onclick="openCat('bio')"><div class="cat-icon">⚙️</div><div class="cat-name">Биомеханика</div><div class="cat-count">2 раздела</div></div>
+          <div class="cat-card" onclick="openCat('mfr')"><div class="cat-icon">🔵</div><div class="cat-name">МФР</div><div class="cat-count">8 уроков</div></div>
+          <div class="cat-card" onclick="openCat('stretch')"><div class="cat-icon">🤸</div><div class="cat-name">Растяжки</div><div class="cat-count">20 уроков</div></div>
+          <div class="cat-card" onclick="openCat('massage')"><div class="cat-icon">👐</div><div class="cat-name">Массаж</div><div class="cat-count">1 практика</div></div>
+        </div>
+      </div>
+      <div id="v-list" class="view">
+        <button class="back-btn" onclick="showView('cats')">← Назад</button>
+        <div class="workout-list" id="wlist"></div>
+      </div>
+      <div id="v-detail" class="view">
+        <button class="back-btn" onclick="showView('list')">← Назад</button>
+        <div id="detail-body"></div>
+      </div>
+    </div>
+
+    <!-- ПРОГРЕСС -->
+    <div id="sec-prog" class="sec">
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-lbl">Тренировок</div><div class="stat-val" id="p-total">0</div></div>
+        <div class="stat-box"><div class="stat-lbl">Серия</div><div class="stat-val" id="p-streak">0🔥</div></div>
+        <div class="stat-box"><div class="stat-lbl">Месяц</div><div class="stat-val" id="p-month">0</div></div>
+      </div>
+      <div class="card">
+        <div class="month-nav">
+          <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
+          <div class="month-label" id="cal-label"></div>
+          <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-daynames">
+          <div class="cal-dayname">Пн</div><div class="cal-dayname">Вт</div><div class="cal-dayname">Ср</div>
+          <div class="cal-dayname">Чт</div><div class="cal-dayname">Пт</div><div class="cal-dayname">Сб</div><div class="cal-dayname">Вс</div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="hm-legend">
+          <span>меньше</span>
+          <div class="hm-lc hm-0"></div><div class="hm-lc hm-1"></div><div class="hm-lc hm-2"></div><div class="hm-lc hm-3"></div>
+          <span>больше</span>
+        </div>
+        <div class="tooltip-box" id="tooltip">Нажми на день — увидишь тренировки</div>
+      </div>
+      <div class="card">
+        <div class="card-title">История месяца</div>
+        <div class="log-list" id="cal-log"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Топ практик</div>
+        <div id="top-list"><div class="empty">Отмечай тренировки — появится статистика</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <nav class="nav">
+    <button class="nav-btn active" onclick="goTab('cat',this)"><span class="nav-icon">📋</span>Каталог</button>
+    <button class="nav-btn" onclick="goTab('prog',this)"><span class="nav-icon">📊</span>Прогресс</button>
+  </nav>
+</div>
+
+<script>
+const tg=window.Telegram?.WebApp;
+if(tg){tg.expand();tg.ready();}
+
+function range(s,e){const r=[];for(let i=s;i<=e;i++)r.push(i);return r;}
+
+const CATALOG={
+  breath:{title:'🌬️ Дыхание',items:[
+    {name:'Метод Вима Хофа',desc:'Дыхательная практика по методу Вима Хофа',private:true,url:'https://t.me/vimhofprac/2'}
+  ]},
+  gymn:{title:'🤸 Гимнастика',items:[
+    {name:'Гимнастика для шеи (Шишонин)',desc:'Упражнения для шеи доктора Шишонина',private:true,url:'https://t.me/shishgimn/2'},
+    {name:'Восстановление зрения (Жданов)',desc:'Упражнения для восстановления зрения',private:true,url:'https://t.me/jdanzren/2'}
+  ]},
+  qigong:{title:'☯️ Цигун',items:[
+    {name:'Цигун — утренняя 20 мин',desc:'Утренняя тренировка 20 минут',private:true,url:'https://t.me/liholden/2'},
+    {name:'Цигун — утренняя зарядка 10 мин',desc:'Короткая утренняя зарядка',private:true,url:'https://t.me/liholden/3'},
+    {name:'Цигун — вечерняя зарядка 20 мин',desc:'Вечерняя практика 20 минут',private:true,url:'https://t.me/liholden/4'},
+    {name:'Цигун — вечерний ритуал Ци 10 мин',desc:'Вечерний ритуал 10 минут',private:true,url:'https://t.me/liholden/5'}
+  ]},
+  yoga:{title:'🧘 Йога',items:[
+    {name:'Йога нидра',desc:'Глубокое расслабление',private:true,url:'https://t.me/c/2994536092/120/1211'}
+  ]},
+  face:{title:'💆 Фейсбилдинг',subcats:true,items:[
+    {name:'Часть 1',desc:'14 уроков · шея, апоневроз, лицо',subcat:'face1'},
+    {name:'Часть 2',desc:'12 уроков · осанка, лоб, глаза',subcat:'face2'},
+    {name:'Часть 3',desc:'12 уроков · шея, платизма, апоневроз',subcat:'face3'},
+    {name:'Часть 4',desc:'10 уроков · плечи, скулы, овал лица',subcat:'face4'},
+  ]},
+  face1:{title:'💆 Часть 1',items:[
+    {name:'Урок 1: Шея и ГКС-мышца',desc:'Охватывающие движения по шейно-ключично-сосцевидной мышце, локоть в одну сторону, голова в другую. По 1 минуте на каждую сторону.',private:true,url:'https://t.me/c/3333877059/4'},
+    {name:'Урок 2: Апоневроз',desc:'Простукивание по всему периметру головы включая линию лба. 1 минута.',private:true,url:'https://t.me/c/3333877059/15'},
+    {name:'Урок 3: Платизма',desc:'Руки под ключицами, голова вверх, челюсть вперёд. Затем повороты головы в стороны. По 30 секунд на каждую сторону.',private:true,url:'https://t.me/c/3333877059/16'},
+    {name:'Урок 4: Височная мышца',desc:'Пальцы на височной области, открываем рот — мышца двигает руки. 1 минута.',private:true,url:'https://t.me/c/3333877059/17'},
+    {name:'Урок 5: Лобная мышца',desc:'Косточками от линии брови перетираем ткани с нажимом к кости в хаотичном направлении. 1–1.5 минуты.',private:true,url:'https://t.me/c/3333877059/18'},
+    {name:'Урок 6: Глаза',desc:'Широко открытые глаза 0.5–1 мин, затем мигание с широко открытыми глазами 0.5–1 мин, затем зигзагообразные движения 0.5 мин.',private:true,url:'https://t.me/c/3333877059/19'},
+    {name:'Урок 7: Ушная область и челюсть',desc:'Ушки между пальцами-рогаточкой, сдвигаем к макушке и назад. Затем прокатывающие движения вдоль уха и нижней челюсти. По 0.5–1 минуте на сторону.',private:true,url:'https://t.me/c/3333877059/20'},
+    {name:'Урок 8: Нёбный шов',desc:'Остеопатическая техника. Проворачивающие движения пальцем по среднему нёбному шву от центра к зубам. Обработать руки!',private:true,url:'https://t.me/c/3333877059/21'},
+    {name:'Урок 9: Массаж носа',desc:'Растирающие движения кончиками пальцев вверх и вниз по крыльям и спинке носа. 10–20 повторений.',private:true,url:'https://t.me/c/3333877059/22'},
+    {name:'Урок 10: Носогубный треугольник',desc:'Захватываем ткань и прокручиваем, оттягиваем и прокручиваем. Снимаем напряжение без болезненных ощущений. 0.5 минуты.',private:true,url:'https://t.me/c/3333877059/23'},
+    {name:'Урок 11: Жевательные мышцы',desc:'Делим жевательную мышцу на три линии. Прокручивающие движения с нажимом от центра к периферии по каждой линии. По 1 минуте на линию на каждую сторону.',private:true,url:'https://t.me/c/3333877059/24'},
+    {name:'Урок 12: Подбородочная мышца',desc:'Нижняя губа за зубы, протягивающие движения косточками вглубь тканей подбородка. 0.5–1 минуты.',private:true,url:'https://t.me/c/3333877059/25'},
+    {name:'Урок 13',desc:'Упражнение 13 из первой части.',private:true,url:'https://t.me/c/3333877059/26'},
+    {name:'Урок 14',desc:'Упражнение 14 из первой части.',private:true,url:'https://t.me/c/3333877059/27'},
+  ]},
+  face2:{title:'💆 Часть 2',items:[
+    {name:'Урок 1: Кровоснабжение шеи и лица',desc:'Руки вверх, подбородок к груди. Руки вниз, подбородок вверх. Движение от лопаток, голову не запрокидывать. 5–10 повторений.',private:true,url:'https://t.me/c/3342181936/3'},
+    {name:'Урок 2: Апоневроз височной зоны',desc:'Захваты у корней волос с обеих сторон, подтягиваем апоневроз к центру головы на вдохе до упора. 3 повторения.',private:true,url:'https://t.me/c/3342181936/4'},
+    {name:'Урок 3: Мышцы шеи',desc:'Проработка мышц шеи. 1–2 минуты.',private:true,url:'https://t.me/c/3342181936/5'},
+    {name:'Урок 4: Лобная мышца',desc:'Проработка лобной мышцы. 1 минута.',private:true,url:'https://t.me/c/3342181936/6'},
+    {name:'Урок 5: Упражнения для глаз',desc:'Триада из прошлого урока плюс дополнительное упражнение. 0.5–1 минуты.',private:true,url:'https://t.me/c/3342181936/7'},
+    {name:'Урок 6: Надбровная часть',desc:'Медленные растягивающие движения в надбровной области. По 10 повторений.',private:true,url:'https://t.me/c/3342181936/8'},
+    {name:'Урок 7: Дракончик и Лошадка',desc:'Дракончик — упражнение для мышц носа, 20–30 повторений. Лошадка — для орбитальной области и жевательных мышц, 5–10 повторений.',private:true,url:'https://t.me/c/3342181936/9'},
+    {name:'Урок 8: Жевательные мышцы',desc:'Проработка жевательных мышц. 2 минуты на каждую сторону.',private:true,url:'https://t.me/c/3342181936/10'},
+    {name:'Урок 9: Жвачка — остеопатика',desc:'Остеопатическая техника Жвачка. 30 секунд.',private:true,url:'https://t.me/c/3342181936/11'},
+    {name:'Урок 10: Ящик для подбородка',desc:'Подбородок вверх, выдвигаем вперёд, задвигаем, опускаем. 0.5–1 минуты.',private:true,url:'https://t.me/c/3342181936/12'},
+    {name:'Урок 11: Кулак — расслабление челюсти',desc:'Расслабление жевательных мышц и тонуса нижней челюсти. 30 повторений.',private:true,url:'https://t.me/c/3342181936/13'},
+  ]},
+  face3:{title:'💆 Часть 3',items:[
+    {name:'Урок 1: Работа с шеей',desc:'Проработка мышц шеи. 1–2 минуты.',private:true,url:'https://t.me/c/3241298667/3'},
+    {name:'Урок 2: Платизма с языком',desc:'Расслабление и проработка платизмы с участием языка. 1–2 минуты.',private:true,url:'https://t.me/c/3241298667/4'},
+    {name:'Урок 3: Простукивание грудины',desc:'Простукивание по грудинной мышце с переходом на заднюю мышцу шеи и апоневроз. 1–2 минуты.',private:true,url:'https://t.me/c/3241298667/5'},
+    {name:'Урок 4: Дыхание черепа',desc:'Остеопатическая техника дыхания черепа. 1 минута.',private:true,url:'https://t.me/c/3241298667/6'},
+    {name:'Урок 5: Ушные раковины',desc:'Проработка ушных раковин. 0.5–1 минуты.',private:true,url:'https://t.me/c/3241298667/7'},
+    {name:'Урок 6: Остеопатика глазничной области',desc:'Профилактика просадки верхней части черепа в глазничной области. 0.5 минуты.',private:true,url:'https://t.me/c/3241298667/8'},
+    {name:'Урок 7: Упражнение для носа',desc:'Проработка мышц и тканей носа. 0.5 минуты.',private:true,url:'https://t.me/c/3241298667/9'},
+    {name:'Урок 8: Замок для лба',desc:'Упражнение Замок для проработки лобной области. 1 минута.',private:true,url:'https://t.me/c/3241298667/10'},
+    {name:'Урок 9: Триада для глаз',desc:'Три упражнения — широко открытые глаза, моргание, зигзаги. По 0.5 минуты на каждое.',private:true,url:'https://t.me/c/3241298667/11'},
+    {name:'Урок 10: Расслабление верхней губы',desc:'Расслабление мышц поднимающих верхнюю губу. 0.5 минуты.',private:true,url:'https://t.me/c/3241298667/12'},
+    {name:'Урок 11: Интероральный массаж',desc:'Массаж жевательных мышц изнутри для глубокого расслабления. 2 минуты на каждую сторону.',private:true,url:'https://t.me/c/3241298667/13'},
+    {name:'Урок 12: Контур нижней челюсти',desc:'Проработка контура нижней челюсти. 0.5–1 минуты.',private:true,url:'https://t.me/c/3241298667/14'},
+  ]},
+  face4:{title:'💆 Часть 4',items:[
+    {name:'Урок 1: Плечевой корпус',desc:'Улучшение кровоснабжения шеи, головы и лица через движения плечевого корпуса. По 20–30 повторений на каждую сторону.',private:true,url:'https://t.me/c/3538058065/3'},
+    {name:'Урок 2: Мышцы шеи',desc:'Проработка мышц шеи. 1–2 минуты.',private:true,url:'https://t.me/c/3538058065/4'},
+    {name:'Урок 3: Апоневроз',desc:'Работа с апоневрозом головы. 1–2 минуты.',private:true,url:'https://t.me/c/3538058065/5'},
+    {name:'Урок 4: Лобная мышца',desc:'Проработка лобной мышцы. 1–2 минуты.',private:true,url:'https://t.me/c/3538058065/6'},
+    {name:'Урок 5: Галочка для глаз',desc:'Упражнение Галочка для укрепления мышц глаз. 0.5–1 минуты.',private:true,url:'https://t.me/c/3538058065/7'},
+    {name:'Урок 6: Скуловая мышца',desc:'Проработка скуловой мышцы. 0.5 минуты.',private:true,url:'https://t.me/c/3538058065/8'},
+    {name:'Урок 7: Упражнение О для овала лица',desc:'Статическое упражнение О для формирования овала лица. 0.5–1 минуты.',private:true,url:'https://t.me/c/3538058065/9'},
+    {name:'Урок 8: Работа с языком',desc:'Упражнения для мышц языка во всех направлениях. 5–10 повторений на каждое направление.',private:true,url:'https://t.me/c/3538058065/10'},
+    {name:'Урок 9: Расслабление жевательных мышц',desc:'Расслабление жевательных мышц. 1–2 минуты.',private:true,url:'https://t.me/c/3538058065/11'},
+    {name:'Урок 10: Контур нижней челюсти',desc:'Медленная проработка контура нижней челюсти. 2–3 проходки на каждую сторону.',private:true,url:'https://t.me/c/3538058065/12'},
+  ]},
+  bio:{title:'⚙️ Биомеханика',subcats:true,items:[
+    {name:'Биомеханика Москва',desc:'2 урока · грудной отдел и мобильность',subcat:'bio_msk'},
+    {name:'Переобучение',desc:'24 комплекса · выравнивание и осанка',subcat:'bio_move'},
+  ]},
+  bio_msk:{title:'⚙️ Биомеханика Москва',items:[
+    {name:'Урок 1: Грудной отдел на ролле',desc:'Работа с грудным отделом на ролле, 10–15 минут лёжа.',private:true,url:'https://t.me/c/3144092742/2'},
+    {name:'Урок 2: Мобильность и скручивания',desc:'Мобильность грудного отдела, скручивания в спине и животе.',private:true,url:'https://t.me/c/3144092742/3'},
+  ]},
+  bio_move:{title:'🚶 Переобучение',items:range(2,25).map((i,idx)=>({
+    name:`Комплекс ${idx+1}: ${['Нейтральное выравнивание тела','Красивая и здоровая осанка','Коррекция домика на животе','Улучшение гибкости, раскрытие грудного отдела','Коррекция гиперлордоза','Работа кора и правильное дыхание','Улучшение баланса тела','Мышцы тазового дна и ягодицы','Коррекция сутулости','Мобильность тазобедренного сустава','Мобильность суставов нижних конечностей','Стабильность коленного сустава','Контроль движений и расслабление','Оптимизация дыхания — антистресс','Мобильность плечевого сустава','Биомеханика с мячом для пилатеса','Биомеханика голеностопного сустава','Качество движения ТБС','Снятие зажимов грудного отдела','Биомеханика всего тела с мячом','Профилактика плоскостопия','Биомеханика с эластичной лентой','Качество движения ТБС сустава','Подготовка к планкам'][idx]}`,
+    desc:'Переобучение движению — биомеханика и осанка',
+    private:true,url:`https://t.me/c/3387149168/${i}`
+  }))},
+  mfr:{title:'🔵 МФР',items:range(2,9).map((i,idx)=>({
+    name:`Урок ${idx+1}: ${['Стопы и голень','Крестец и ягодицы','Ладони и руки','Поясница и лопатки','Расслабление шеи','Грудные мышцы','Передняя часть бедра','Плечевой сустав'][idx]}`,
+    desc:['Подошвенная фасция, икроножные, ахилл','Крестец, ягодицы, задняя часть бедра','Ладонная фасция, предплечья, бицепс, трицепс','Мышцы поясницы, зона между лопаток','Подзатылочные, трапециевидные, ромбовидные','Большая и малая грудные мышцы','Квадрицепс и сгибатели бедра','Широчайшая, зубчатая, дельтовидные'][idx],
+    private:true,url:`https://t.me/c/3433941948/${i}`
+  }))},
+  stretch:{title:'🤸 Динамические растяжки',items:range(3,22).map((i,idx)=>({
+    name:`Урок ${idx+1}: ${['Вводная — походка и осанка','Расслабление поясницы','Тазобедренный сустав и позвоночник','Свобода движений во всех суставах','Стопы и голеностоп','Динамические растяжки на все тело','Свободное дыхание','Раскрытие тазобедренных суставов','Тренировка в 3D через дыхание','Классика — осанка и дыхание','Правильная растяжка задней части бедра','Акцент на плечи','Раскрытие ТБС без оборудования','Акцент на ТБС суставы','Челюсть, запястья и все тело','Улучшение осанки и гибкости','Работа с плоскостопием','Осанка и растяжка ног','Через дыхание — все суставы','Опора в стопы'][idx]}`,
+    desc:'Динамические растяжки для улучшения подвижности',
+    private:true,url:`https://t.me/c/3417003668/${i}`
+  }))},
+
+  massage:{title:'👐 Массаж',items:[
+    {name:'Массаж глаз',desc:'Упражнения для снятия напряжения с глаз',private:true,url:'https://t.me/c/2994536092/120/1773'}
+  ]}
+};
+
+let logs=JSON.parse(localStorage.getItem('wlogs')||'[]');
+let curCat=null,curItem=null;
+const today=new Date();
+let calYear=today.getFullYear(),calMonth=today.getMonth();
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+function saveLogs(){localStorage.setItem('wlogs',JSON.stringify(logs));}
+function fmt(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtRu(s){const[y,m,d]=s.split('-');return `${d}.${m}.${y}`;}
+function todayStr(){return fmt(today);}
+
+function goTab(name,btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+name).classList.add('active');
+  btn.classList.add('active');
+  const titles={cat:'Мои тренировки',prog:'Прогресс'};
+  const subs={cat:'Выбери категорию',prog:'Активность и история'};
+  document.getElementById('htitle').textContent=titles[name];
+  document.getElementById('hsub').textContent=subs[name];
+  if(name==='prog')renderAll();
+}
+
+function showView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.getElementById('v-'+v).classList.add('active');
+}
+
+function openCat(key,parentKey){
+  curCat=key;
+  const cat=CATALOG[key];
+  if(cat.subcats){
+    document.getElementById('wlist').innerHTML=cat.items.map((it,i)=>
+      `<div class="workout-item" onclick="openCat('${it.subcat}','${key}')">
+        <div><div class="workout-name">${it.name}</div><div class="workout-desc">${it.desc}</div></div>
+        <span class="workout-arrow">›</span>
+      </div>`).join('');
+  } else {
+    document.getElementById('wlist').innerHTML=cat.items.map((it,i)=>
+      `<div class="workout-item" onclick="openDetail('${key}',${i})">
+        <div><div class="workout-name">${it.name}</div></div>
+        <span class="workout-arrow">›</span>
+      </div>`).join('');
+  }
+  showView('list');
+  document.getElementById('htitle').textContent=cat.title;
+  document.getElementById('hsub').textContent=cat.items.length+' практик';
+  if(parentKey) document.querySelector('#v-list .back-btn').onclick=()=>openCat(parentKey);
+  else document.querySelector('#v-list .back-btn').onclick=()=>showView('cats');
+}
+
+function openDetail(catKey,idx){
+  curCat=catKey;curItem=idx;
+  const it=CATALOG[catKey].items[idx];
+  const done=logs.some(l=>l.name===it.name&&l.date===todayStr());
+  const doneHtml=`<button class="done-btn${done?' done':''}" id="done-btn" onclick="markDone()">${done?'✓ Выполнено сегодня':'✓ Отметить как выполнено'}</button>`;
+
+  document.getElementById('detail-body').innerHTML=`
+    <div class="detail-card">
+      <div class="detail-title">${it.name}</div>
+      <div class="detail-desc">${it.desc}</div>
+      <button class="open-btn" style="margin-bottom:10px;" onclick="window.open('${it.url}','_blank')">▶ Открыть видео в Telegram</button>
+      ${doneHtml}
+    </div>`;
+  showView('detail');
+  document.getElementById('htitle').textContent=it.name;
+  document.getElementById('hsub').textContent=CATALOG[catKey].title;
+}
+
+function markDone(){
+  const it=CATALOG[curCat].items[curItem];
+  const ds=todayStr();
+  if(!logs.some(l=>l.name===it.name&&l.date===ds)){
+    logs.push({name:it.name,cat:CATALOG[curCat].title,date:ds});
+    saveLogs();
+  }
+  const btn=document.getElementById('done-btn');
+  btn.textContent='✓ Выполнено сегодня';
+  btn.className='done-btn done';
+}
+
+function countByDate(){const m={};logs.forEach(l=>{m[l.date]=(m[l.date]||0)+1;});return m;}
+function heatClass(n){if(!n)return 'hm-0';if(n===1)return 'hm-1';if(n===2)return 'hm-2';return 'hm-3';}
+
+function renderCal(){
+  const counts=countByDate();
+  document.getElementById('cal-label').textContent=MONTHS[calMonth]+' '+calYear;
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  const firstDay=new Date(calYear,calMonth,1);
+  const lastDay=new Date(calYear,calMonth+1,0).getDate();
+  const startDow=(firstDay.getDay()+6)%7;
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+  for(let i=0;i<startDow;i++){
+    const c=document.createElement('div');
+    c.className='cal-cell hm-0 other-m';
+    c.textContent=prevDays-startDow+1+i;
+    grid.appendChild(c);
+  }
+  for(let d=1;d<=lastDay;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const c=document.createElement('div');
+    c.className='cal-cell '+heatClass(counts[ds]||0);
+    if(ds===todayStr())c.classList.add('is-today');
+    c.textContent=d;
+    c.onclick=()=>showDay(ds,counts[ds]||0);
+    grid.appendChild(c);
+  }
+  const rem=(7-(startDow+lastDay)%7)%7;
+  for(let d=1;d<=rem;d++){
+    const c=document.createElement('div');
+    c.className='cal-cell hm-0 other-m';
+    c.textContent=d;
+    grid.appendChild(c);
+  }
+  renderMonthLog();
+}
+
+function showDay(ds,n){
+  const el=document.getElementById('tooltip');
+  const dl=logs.filter(l=>l.date===ds);
+  el.textContent=n?`${fmtRu(ds)}: ${dl.map(l=>l.name).join(', ')}`:`${fmtRu(ds)} — нет тренировок`;
+}
+
+function renderMonthLog(){
+  const ms=`${calYear}-${String(calMonth+1).padStart(2,'0')}`;
+  const ml=logs.filter(l=>l.date.startsWith(ms));
+  const el=document.getElementById('cal-log');
+  if(!ml.length){el.innerHTML='<div class="empty">Нет тренировок в этом месяце</div>';return;}
+  const byDate={};
+  ml.forEach(l=>{if(!byDate[l.date])byDate[l.date]=[];byDate[l.date].push(l);});
+  el.innerHTML=Object.keys(byDate).sort().reverse().map(ds=>
+    `<div class="log-item"><div class="log-date">${fmtRu(ds)}</div><div class="log-text">${byDate[ds].map(l=>l.name).join(', ')}</div></div>`
+  ).join('');
+}
+
+function changeMonth(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCal();
+}
+
+function renderStats(){
+  document.getElementById('p-total').textContent=logs.length;
+  const trained=new Set(logs.map(l=>l.date));
+  let streak=0,d=new Date(today);
+  while(trained.has(fmt(d))){streak++;d.setDate(d.getDate()-1);}
+  document.getElementById('p-streak').textContent=streak+'🔥';
+  const ms=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('p-month').textContent=logs.filter(l=>l.date.startsWith(ms)).length;
+}
+
+function renderTop(){
+  const freq={};
+  logs.forEach(l=>{freq[l.name]=(freq[l.name]||0)+1;});
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const el=document.getElementById('top-list');
+  if(!sorted.length){el.innerHTML='<div class="empty">Отмечай тренировки — появится статистика</div>';return;}
+  const max=sorted[0][1];
+  el.innerHTML=sorted.map(([name,cnt])=>
+    `<div class="top-item">
+      <div class="top-row"><span class="top-name">${name}</span><span class="top-cnt">${cnt}×</span></div>
+      <div class="top-bar"><div class="top-fill" style="width:${Math.round(cnt/max*100)}%"></div></div>
+    </div>`).join('');
+}
+
+function renderAll(){renderStats();renderCal();renderTop();}
+</script>
+</body>
+</html>
