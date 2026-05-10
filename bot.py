@@ -2,13 +2,10 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
-BOT_TOKEN = "8796589455:AAEJTy8MnSNeaKzhP5T4Wxhj60CKYZzMiIU"  # Вставь токен от @BotFather
+BOT_TOKEN = "8796589455:AAEJTy8MnSNeaKzhP5T4Wxhj60CKYZzMiIU"
 
 logging.basicConfig(level=logging.INFO)
 
-# ==============================
-# КАТАЛОГ ТРЕНИРОВОК
-# ==============================
 CATALOG = {
     "breath": {
         "title": "🌬️ Дыхание",
@@ -98,7 +95,7 @@ def main():
     app.add_handler(CallbackQueryHandler(back_main, pattern="^back_main$"))
     app.add_handler(CallbackQueryHandler(show_category, pattern="^cat_"))
     print("🤖 Бот запущен!")
-    app.run_polling()
+    app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
