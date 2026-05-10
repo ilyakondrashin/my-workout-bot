@@ -2,6 +2,11 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
 
 class Handler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/' or self.path == '':
+            self.path = '/webapp.html'
+        return SimpleHTTPRequestHandler.do_GET(self)
+
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         super().end_headers()
