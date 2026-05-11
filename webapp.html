@@ -14,9 +14,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .header-sub{font-size:11px;opacity:0.5;margin-top:2px;}
 .content{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;}
 .nav{display:grid;grid-template-columns:repeat(2,1fr);border-top:0.5px solid rgba(0,0,0,0.08);background:var(--tg-theme-secondary-bg-color,#fff);position:sticky;bottom:0;}
-.nav-btn{padding:10px 4px 8px;text-align:center;cursor:pointer;border:none;background:none;color:var(--tg-theme-hint-color,#888);font-size:10px;}
+.nav-btn{padding:8px 2px 6px;text-align:center;cursor:pointer;border:none;background:none;color:var(--tg-theme-hint-color,#888);font-size:9px;}
 .nav-btn.active{color:var(--tg-theme-link-color,#2AABEE);}
-.nav-icon{font-size:22px;display:block;margin-bottom:2px;}
+.nav-icon{font-size:18px;display:block;margin-bottom:1px;}
 .sec{display:none;flex-direction:column;gap:12px;}
 .sec.active{display:flex;}
 .view{display:none;flex-direction:column;gap:10px;}
@@ -92,8 +92,147 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <div class="content">
 
-    <!-- КАТАЛОГ -->
-    <div id="sec-cat" class="sec active">
+    <!-- ДАШБОРД -->
+    <div id="sec-dash" class="sec active">
+      <div style="display:flex;background:rgba(0,0,0,0.05);border-radius:10px;padding:2px;gap:2px;">
+        <button id="dtab-today" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:#4F46E5;" onclick="switchDTab('today')">Сегодня</button>
+        <button id="dtab-week" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:var(--tg-theme-hint-color,#888);" onclick="switchDTab('week')">Неделя</button>
+      </div>
+
+      <div id="dsec-today" style="display:flex;flex-direction:column;gap:10px;">
+        <div id="dash-score-card" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:14px;color:#fff;display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:12px;opacity:.8;margin-bottom:4px;">Счёт дня</div>
+            <div style="font-size:32px;font-weight:500;" id="dash-score">0<span style="font-size:16px;opacity:.7;">/100</span></div>
+            <div style="font-size:11px;opacity:.7;margin-top:2px;" id="dash-score-label">Начни день!</div>
+          </div>
+          <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
+            <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
+              <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="6"/>
+              <circle id="dash-ring" cx="32" cy="32" r="26" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="0 163" stroke-linecap="round"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#fff;" id="dash-ring-label">0%</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+          <div style="border-radius:10px;padding:12px;background:#EEF2FF;border:0.5px solid #C7D2FE;">
+            <div style="font-size:18px;margin-bottom:4px;">💪</div>
+            <div style="font-size:10px;font-weight:500;color:#4F46E5;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Тренировки</div>
+            <div style="font-size:18px;font-weight:500;color:#4F46E5;" id="dash-workouts-today">0</div>
+            <div style="font-size:10px;color:#4F46E5;opacity:.6;">практик выполнено</div>
+            <div style="height:4px;border-radius:2px;margin-top:8px;background:#C7D2FE;overflow:hidden;"><div id="dash-w-bar" style="height:100%;border-radius:2px;background:#4F46E5;width:0%;"></div></div>
+          </div>
+          <div style="border-radius:10px;padding:12px;background:#FFF7ED;border:0.5px solid #FED7AA;">
+            <div style="font-size:18px;margin-bottom:4px;">💊</div>
+            <div style="font-size:10px;font-weight:500;color:#EA580C;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">БАДы</div>
+            <div style="font-size:18px;font-weight:500;color:#EA580C;" id="dash-bads-today">0%</div>
+            <div style="font-size:10px;color:#EA580C;opacity:.6;" id="dash-bads-sub">не начато</div>
+            <div style="height:4px;border-radius:2px;margin-top:8px;background:#FED7AA;overflow:hidden;"><div id="dash-b-bar" style="height:100%;border-radius:2px;background:#EA580C;width:0%;"></div></div>
+          </div>
+          <div style="border-radius:10px;padding:12px;background:#F5F3FF;border:0.5px solid #DDD6FE;">
+            <div style="font-size:18px;margin-bottom:4px;">🌙</div>
+            <div style="font-size:10px;font-weight:500;color:#7C3AED;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Сон</div>
+            <div style="font-size:18px;font-weight:500;color:#7C3AED;" id="dash-sleep-dur">—</div>
+            <div style="font-size:10px;color:#7C3AED;opacity:.6;" id="dash-sleep-time">нет данных</div>
+            <div style="height:4px;border-radius:2px;margin-top:8px;background:#DDD6FE;overflow:hidden;"><div id="dash-s-bar" style="height:100%;border-radius:2px;background:#7C3AED;width:0%;"></div></div>
+          </div>
+          <div style="border-radius:10px;padding:12px;background:#ECFDF5;border:0.5px solid #A7F3D0;">
+            <div style="font-size:18px;margin-bottom:4px;">🥗</div>
+            <div style="font-size:10px;font-weight:500;color:#059669;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Питание</div>
+            <div style="font-size:18px;font-weight:500;color:#059669;" id="dash-food-today">—</div>
+            <div style="font-size:10px;color:#059669;opacity:.6;">скоро</div>
+            <div style="height:4px;border-radius:2px;margin-top:8px;background:#A7F3D0;overflow:hidden;"><div id="dash-f-bar" style="height:100%;border-radius:2px;background:#059669;width:0%;"></div></div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid rgba(0,0,0,.06);">
+          <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">Сон — отход до 23:00</div>
+          <div id="dash-sleep-status" style="font-size:13px;color:var(--tg-theme-hint-color,#888);">Данные появятся после записи сна</div>
+        </div>
+
+        <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid rgba(0,0,0,.06);">
+          <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:12px;">Запись к специалистам</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,107,53,.12);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">💆</div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:var(--tg-theme-text-color,#111);">Лала</div>
+                  <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">Массаж лица</div>
+                </div>
+              </div>
+              <button onclick="bookWhatsApp('79518199757','Лала','Массаж лица')" style="padding:8px 12px;background:#25D366;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Записаться
+              </button>
+            </div>
+            <div style="height:0.5px;background:rgba(0,0,0,.06);"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:rgba(42,171,238,.12);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">⚙️</div>
+                <div>
+                  <div style="font-size:13px;font-weight:500;color:var(--tg-theme-text-color,#111);">Эксцентрика</div>
+                  <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">Биомеханика</div>
+                </div>
+              </div>
+              <button onclick="bookWhatsApp('79251505901','Эксцентрика','Биомеханика')" style="padding:8px 12px;background:#25D366;border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Записаться
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="dsec-week" style="display:none;flex-direction:column;gap:10px;">
+        <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid rgba(0,0,0,.06);">
+          <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">Активность за неделю</div>
+          <div style="display:flex;gap:4px;align-items:flex-end;height:60px;" id="week-chart"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+          <div style="border-radius:10px;padding:12px;background:#EEF2FF;border:0.5px solid #C7D2FE;">
+            <div style="font-size:18px;margin-bottom:4px;">💪</div>
+            <div style="font-size:10px;font-weight:500;color:#4F46E5;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Тренировки</div>
+            <div style="font-size:18px;font-weight:500;color:#4F46E5;" id="dash-w-week">0</div>
+            <div style="font-size:10px;color:#4F46E5;opacity:.6;">за неделю</div>
+          </div>
+          <div style="border-radius:10px;padding:12px;background:#FFF7ED;border:0.5px solid #FED7AA;">
+            <div style="font-size:18px;margin-bottom:4px;">💊</div>
+            <div style="font-size:10px;font-weight:500;color:#EA580C;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">БАДы</div>
+            <div style="font-size:18px;font-weight:500;color:#EA580C;" id="dash-b-week">—%</div>
+            <div style="font-size:10px;color:#EA580C;opacity:.6;">среднее</div>
+          </div>
+          <div style="border-radius:10px;padding:12px;background:#F5F3FF;border:0.5px solid #DDD6FE;">
+            <div style="font-size:18px;margin-bottom:4px;">🌙</div>
+            <div style="font-size:10px;font-weight:500;color:#7C3AED;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Сон</div>
+            <div style="font-size:18px;font-weight:500;color:#7C3AED;" id="dash-s-week">—ч</div>
+            <div style="font-size:10px;color:#7C3AED;opacity:.6;" id="dash-sleep-23">до 23:00: —</div>
+          </div>
+          <div style="border-radius:10px;padding:12px;background:#ECFDF5;border:0.5px solid #A7F3D0;">
+            <div style="font-size:18px;margin-bottom:4px;">🥗</div>
+            <div style="font-size:10px;font-weight:500;color:#059669;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Питание</div>
+            <div style="font-size:18px;font-weight:500;color:#059669;" id="dash-f-week">—</div>
+            <div style="font-size:10px;color:#059669;opacity:.6;">скоро</div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid rgba(0,0,0,.06);">
+          <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">Серия дней 🔥</div>
+          <div id="streak-row" style="display:flex;gap:6px;justify-content:center;"></div>
+          <div style="text-align:center;font-size:12px;color:#4F46E5;font-weight:500;margin-top:8px;" id="streak-label">0 дней подряд</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ТРЕНИРОВКИ -->
+    <div id="sec-workout" class="sec">
+      <div style="display:flex;background:rgba(0,0,0,0.05);border-radius:10px;padding:2px;gap:2px;margin-bottom:2px;">
+        <button id="wtab-cat" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:var(--tg-theme-link-color,#2AABEE);" onclick="switchWTab('cat')">Каталог</button>
+        <button id="wtab-prog" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:var(--tg-theme-hint-color,#888);" onclick="switchWTab('prog')">Прогресс</button>
+      </div>
+      <div id="wsec-cat" style="display:flex;flex-direction:column;gap:12px;">
       <div id="v-cats" class="view active">
         <div class="cat-grid">
           <div class="cat-card" onclick="openCat('breath')"><div class="cat-icon">🌬️</div><div class="cat-name">Дыхание</div><div class="cat-count">1 практика</div></div>
@@ -117,8 +256,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
-    <!-- ПРОГРЕСС -->
-    <div id="sec-prog" class="sec">
+      </div>
+      <div id="wsec-prog" style="display:none;flex-direction:column;gap:12px;">
       <div class="stat-row">
         <div class="stat-box"><div class="stat-lbl">Тренировок</div><div class="stat-val" id="p-total">0</div></div>
         <div class="stat-box"><div class="stat-lbl">Серия</div><div class="stat-val" id="p-streak">0🔥</div></div>
@@ -152,11 +291,125 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
+    <!-- ПИТАНИЕ (заглушка) -->
+    <div id="sec-nutrition" class="sec">
+      <div class="card" style="text-align:center;padding:30px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">🥗</div>
+        <div style="font-size:15px;font-weight:500;margin-bottom:8px;">Питание</div>
+        <div style="font-size:12px;opacity:0.6;line-height:1.6;">Скоро появится трекер питания с распознаванием еды по фото и проверкой по твоему FODMAP протоколу.</div>
+      </div>
+    </div>
+
+    <!-- СОН (заглушка) -->
+    <div id="sec-sleep" class="sec">
+      <div class="card" style="text-align:center;padding:30px 20px;">
+        <div style="font-size:48px;margin-bottom:16px;">🌙</div>
+        <div style="font-size:15px;font-weight:500;margin-bottom:8px;">Сон</div>
+        <div style="font-size:12px;opacity:0.6;line-height:1.6;">Скоро появится трекер сна. После покупки Oura Ring данные будут синхронизироваться автоматически.</div>
+      </div>
+    </div>
+
+    <!-- ЗАПИСЬ -->
+    <div id="sec-booking" class="sec">
+      <div class="card">
+        <div style="font-size:11px;opacity:0.5;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px;">Специалисты</div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <div style="background:var(--tg-theme-secondary-bg-color,#fff);border:0.5px solid rgba(0,0,0,.06);border-radius:12px;padding:14px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+              <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,107,53,.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">💆</div>
+              <div>
+                <div style="font-size:14px;font-weight:500;">Лала</div>
+                <div style="font-size:11px;opacity:0.5;margin-top:2px;">Массаж лица</div>
+              </div>
+            </div>
+            <button onclick="bookWhatsApp('79518199757','Лала','Массаж лица')" style="width:100%;padding:11px;background:#25D366;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Написать в WhatsApp
+            </button>
+          </div>
+
+          <div style="background:var(--tg-theme-secondary-bg-color,#fff);border:0.5px solid rgba(0,0,0,.06);border-radius:12px;padding:14px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+              <div style="width:44px;height:44px;border-radius:50%;background:rgba(42,171,238,.12);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">⚙️</div>
+              <div>
+                <div style="font-size:14px;font-weight:500;">Эксцентрика</div>
+                <div style="font-size:11px;opacity:0.5;margin-top:2px;">Биомеханика</div>
+              </div>
+            </div>
+            <button onclick="bookWhatsApp('79251505901','Эксцентрика','Биомеханика')" style="width:100%;padding:11px;background:#25D366;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Написать в WhatsApp
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- БАДЫ -->
+    <div id="sec-bads" class="sec">
+      <div id="bads-start-screen" style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card" style="text-align:center;padding:30px 20px;">
+          <div style="font-size:48px;margin-bottom:16px;">💊</div>
+          <div style="font-size:15px;font-weight:500;margin-bottom:8px;">Курс приёма добавок</div>
+          <div style="font-size:12px;opacity:0.6;line-height:1.6;margin-bottom:20px;">
+            Расписание составлено индивидуально.<br>
+            После старта начнётся отсчёт дней.<br>
+            Если пропустишь день — расписание сдвинется автоматически.
+          </div>
+          <button class="open-btn" onclick="startBads()">🚀 Начать курс сегодня</button>
+        </div>
+      </div>
+
+      <div id="bads-active-screen" style="display:none;flex-direction:column;gap:10px;">
+        <div class="card" style="background:rgba(42,171,238,0.08);border:0.5px solid rgba(42,171,238,0.2);">
+          <div style="font-size:11px;font-weight:500;color:var(--tg-theme-link-color,#2AABEE);margin-bottom:4px;" id="bads-period-label"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:14px;font-weight:500;" id="bads-day-label"></div>
+            <div style="font-size:11px;opacity:0.5;" id="bads-date-label"></div>
+          </div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;">
+            <div style="font-size:10px;opacity:0.5;">Принято</div>
+            <div style="flex:1;height:5px;background:rgba(0,0,0,0.06);border-radius:4px;overflow:hidden;">
+              <div id="bads-prog-fill" style="height:100%;background:#2AABEE;border-radius:4px;width:0%;transition:width .3s;"></div>
+            </div>
+            <div style="font-size:11px;font-weight:500;color:var(--tg-theme-link-color,#2AABEE);" id="bads-prog-num">0/0</div>
+          </div>
+        </div>
+
+        <div class="card" id="bads-schedule"></div>
+
+        <button id="skip-btn" style="width:100%;padding:10px;background:rgba(0,0,0,0.04);border:none;border-radius:10px;color:rgba(0,0,0,0.4);font-size:12px;cursor:pointer;" onclick="skipBadDay()">
+          Пропустить сегодня
+        </button>
+
+        <button id="tomorrow-btn" style="width:100%;padding:12px;background:rgba(39,174,96,0.1);border:0.5px solid rgba(39,174,96,0.25);border-radius:10px;color:#27ae60;font-size:13px;font-weight:500;cursor:pointer;" onclick="toggleTomorrowSchedule()">
+          📋 Скопировать расписание для жены на завтра
+        </button>
+
+        <div class="card" style="padding:10px 14px;">
+          <div style="font-size:10px;opacity:0.4;margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px;">Прогресс курса</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:6px;background:rgba(0,0,0,0.06);border-radius:4px;overflow:hidden;">
+              <div id="bads-course-fill" style="height:100%;background:#27ae60;border-radius:4px;width:0%;transition:width .3s;"></div>
+            </div>
+            <div style="font-size:11px;font-weight:500;color:#27ae60;" id="bads-course-num"></div>
+          </div>
+          <div style="font-size:10px;opacity:0.4;margin-top:4px;" id="bads-course-end"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <nav class="nav">
-    <button class="nav-btn active" onclick="goTab('cat',this)"><span class="nav-icon">📋</span>Каталог</button>
-    <button class="nav-btn" onclick="goTab('prog',this)"><span class="nav-icon">📊</span>Прогресс</button>
+  <nav class="nav" style="grid-template-columns:repeat(5,1fr);">
+    <button class="nav-btn active" onclick="goTab('dash',this)"><span class="nav-icon">📊</span>Главная</button>
+    <button class="nav-btn" onclick="goTab('workout',this)"><span class="nav-icon">💪</span>Зал</button>
+    <button class="nav-btn" onclick="goTab('nutrition',this)"><span class="nav-icon">🥗</span>Еда</button>
+    <button class="nav-btn" onclick="goTab('bads',this)"><span class="nav-icon">💊</span>БАДы</button>
+    <button class="nav-btn" onclick="goTab('sleep',this)"><span class="nav-icon">🌙</span>Сон</button>
   </nav>
 </div>
 
@@ -289,16 +542,53 @@ function goTab(name,btn){
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('sec-'+name).classList.add('active');
   btn.classList.add('active');
-  const titles={cat:'Мои тренировки',prog:'Прогресс'};
-  const subs={cat:'Выбери категорию',prog:'Активность и история'};
-  document.getElementById('htitle').textContent=titles[name];
-  document.getElementById('hsub').textContent=subs[name];
-  if(name==='prog')renderAll();
+  const titles={dash:'Главная',workout:'Тренировки',nutrition:'Питание',sleep:'Сон',bads:'БАДы',booking:'Запись'};
+  const subs={dash:'Твои показатели за день',workout:'Каталог и прогресс',nutrition:'FODMAP протокол',sleep:'Отслеживание сна',bads:'Курс приёма',booking:'Записаться к специалисту'};
+  document.getElementById('htitle').textContent=titles[name]||name;
+  document.getElementById('hsub').textContent=subs[name]||'';
+  if(name==='workout') renderAll();
+  if(name==='dash') renderDash();
+  if(name==='bads') initBads();
+}
+
+function switchWTab(tab){
+  const catEl=document.getElementById('wsec-cat');
+  const progEl=document.getElementById('wsec-prog');
+  const catBtn=document.getElementById('wtab-cat');
+  const progBtn=document.getElementById('wtab-prog');
+  if(tab==='cat'){
+    catEl.style.display='flex';
+    progEl.style.display='none';
+    catBtn.style.background='#fff';
+    catBtn.style.color='var(--tg-theme-link-color,#2AABEE)';
+    catBtn.style.fontWeight='500';
+    progBtn.style.background='transparent';
+    progBtn.style.color='var(--tg-theme-hint-color,#888)';
+    progBtn.style.fontWeight='400';
+    document.getElementById('htitle').textContent='Тренировки';
+    document.getElementById('hsub').textContent='Выбери категорию';
+  } else {
+    catEl.style.display='none';
+    progEl.style.display='flex';
+    progBtn.style.background='#fff';
+    progBtn.style.color='var(--tg-theme-link-color,#2AABEE)';
+    progBtn.style.fontWeight='500';
+    catBtn.style.background='transparent';
+    catBtn.style.color='var(--tg-theme-hint-color,#888)';
+    catBtn.style.fontWeight='400';
+    document.getElementById('htitle').textContent='Прогресс тренировок';
+    document.getElementById('hsub').textContent='Активность и история';
+    renderAll();
+  }
 }
 
 function showView(v){
   document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
   document.getElementById('v-'+v).classList.add('active');
+  if(v==='cats'){
+    document.getElementById('htitle').textContent='Тренировки';
+    document.getElementById('hsub').textContent='Выбери категорию';
+  }
 }
 
 function openCat(key,parentKey){
@@ -441,6 +731,542 @@ function renderTop(){
 }
 
 function renderAll(){renderStats();renderCal();renderTop();}
+
+function bookWhatsApp(phone, name, service){
+  const msg=encodeURIComponent(`Здравствуйте! Хочу записаться на ${service}.`);
+  window.open(`https://wa.me/${phone}?text=${msg}`,'_blank');
+}
+
+// ======= ДАШБОРД =======
+function switchDTab(tab){
+  const todayEl=document.getElementById('dsec-today');
+  const weekEl=document.getElementById('dsec-week');
+  const todayBtn=document.getElementById('dtab-today');
+  const weekBtn=document.getElementById('dtab-week');
+  if(tab==='today'){
+    todayEl.style.display='flex'; weekEl.style.display='none';
+    todayBtn.style.background='#fff'; todayBtn.style.color='#4F46E5'; todayBtn.style.fontWeight='500';
+    weekBtn.style.background='transparent'; weekBtn.style.color='var(--tg-theme-hint-color,#888)'; weekBtn.style.fontWeight='400';
+  } else {
+    todayEl.style.display='none'; weekEl.style.display='flex';
+    weekBtn.style.background='#fff'; weekBtn.style.color='#4F46E5'; weekBtn.style.fontWeight='500';
+    todayBtn.style.background='transparent'; todayBtn.style.color='var(--tg-theme-hint-color,#888)'; todayBtn.style.fontWeight='400';
+    renderWeekChart();
+  }
+}
+
+function renderDash(){
+  renderDashToday();
+  renderWeekChart();
+  renderStreak();
+}
+
+function renderDashToday(){
+  const todayKey=fmt(today);
+
+  // Тренировки
+  const wLogs=JSON.parse(localStorage.getItem('wlogs')||'[]');
+  const todayWorkouts=wLogs.filter(l=>l.date===todayKey).length;
+  document.getElementById('dash-workouts-today').textContent=todayWorkouts;
+  const wPct=Math.min(todayWorkouts*20,100);
+  document.getElementById('dash-w-bar').style.width=wPct+'%';
+
+  // БАДы
+  const bState=getBadsState();
+  let bPct=0, bSub='не начато';
+  if(bState){
+    const bChecks=bState.checks[todayKey]||{};
+    const bChecked=Object.values(bChecks).filter(Boolean).length;
+    const curDay=(bState.activeDays||0)+1;
+    const {period:bPeriod}=getPeriodForDay(curDay);
+    let bTotal=0; bPeriod.schedule.forEach(b=>bTotal+=b.items.length);
+    bPct=bTotal?Math.round(bChecked/bTotal*100):0;
+    bSub=`${bChecked} из ${bTotal} принято`;
+  }
+  document.getElementById('dash-bads-today').textContent=bPct+'%';
+  document.getElementById('dash-bads-sub').textContent=bSub;
+  document.getElementById('dash-b-bar').style.width=bPct+'%';
+
+  // Сон
+  const sleepData=JSON.parse(localStorage.getItem('sleep_logs')||'{}');
+  const todaySleep=sleepData[todayKey];
+  if(todaySleep){
+    const [sh,sm]=todaySleep.sleep.split(':').map(Number);
+    const [wh,wm]=todaySleep.wake.split(':').map(Number);
+    let mins=(wh*60+wm)-(sh*60+sm);
+    if(mins<0) mins+=24*60;
+    const h=Math.floor(mins/60),m=mins%60;
+    document.getElementById('dash-sleep-dur').textContent=`${h}ч ${m}м`;
+    document.getElementById('dash-sleep-time').textContent=`${todaySleep.sleep} → ${todaySleep.wake}`;
+    const sPct=Math.min(Math.round(mins/480*100),100);
+    document.getElementById('dash-s-bar').style.width=sPct+'%';
+
+    // Проверка отхода до 23:00
+    const bedH=sh, bedM=sm;
+    const bedMins=bedH*60+bedM;
+    const limit=23*60;
+    let sleepStatus, sleepColor;
+    if(bedMins<=limit){
+      sleepStatus=`✅ Лёг в ${todaySleep.sleep} — отлично, до 23:00!`;
+      sleepColor='#059669';
+    } else if(bedMins<=24*60){
+      sleepStatus=`⚠️ Лёг в ${todaySleep.sleep} — немного позже 23:00`;
+      sleepColor='#d97706';
+    } else {
+      sleepStatus=`❌ Лёг в ${todaySleep.sleep} — слишком поздно`;
+      sleepColor='#dc2626';
+    }
+    document.getElementById('dash-sleep-status').textContent=sleepStatus;
+    document.getElementById('dash-sleep-status').style.color=sleepColor;
+  } else {
+    document.getElementById('dash-sleep-dur').textContent='—';
+    document.getElementById('dash-sleep-time').textContent='нет данных';
+    document.getElementById('dash-sleep-status').textContent='Данные появятся после записи сна';
+    document.getElementById('dash-sleep-status').style.color='var(--tg-theme-hint-color,#888)';
+  }
+
+  // Общий счёт
+  const wScore=Math.min(todayWorkouts*20,40);
+  const bScore=Math.round(bPct*0.35);
+  const sScore=todaySleep?25:0;
+  const total=Math.min(wScore+bScore+sScore,100);
+  document.getElementById('dash-score').innerHTML=`${total}<span style="font-size:16px;opacity:.7;">/100</span>`;
+  const labels=['Начни день!','Неплохо 👍','Хороший день ✓','Отличный день 💪','Идеально! 🔥'];
+  document.getElementById('dash-score-label').textContent=labels[Math.floor(total/25)];
+  const arc=Math.round(total/100*163);
+  document.getElementById('dash-ring').setAttribute('stroke-dasharray',`${arc} 163`);
+  document.getElementById('dash-ring-label').textContent=total+'%';
+}
+
+function renderWeekChart(){
+  const wLogs=JSON.parse(localStorage.getItem('wlogs')||'[]');
+  const days=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const todayDow=(today.getDay()+6)%7;
+  const chart=document.getElementById('week-chart');
+  if(!chart) return;
+  chart.innerHTML='';
+  let weekTotal=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);
+    d.setDate(d.getDate()-(todayDow-i));
+    const ds=fmt(d);
+    const count=wLogs.filter(l=>l.date===ds).length;
+    weekTotal+=count;
+    const pct=Math.min(count*20,100);
+    const isToday=i===todayDow;
+    const isFuture=i>todayDow;
+    chart.innerHTML+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div style="flex:1;display:flex;align-items:flex-end;width:100%;">
+        <div style="width:100%;border-radius:3px 3px 0 0;background:${isFuture?'#e5e7eb':isToday?'#4F46E5':'#4F46E5'};opacity:${isFuture?'0.3':isToday?'1':'0.5'};min-height:4px;height:${isFuture?'4px':Math.max(pct,5)+'%'};"></div>
+      </div>
+      <div style="font-size:9px;color:${isToday?'#4F46E5':'var(--tg-theme-hint-color,#888)'};font-weight:${isToday?'500':'400'};">${days[i]}</div>
+    </div>`;
+  }
+  document.getElementById('dash-w-week').textContent=weekTotal;
+
+  // Среднее сон
+  const sleepData=JSON.parse(localStorage.getItem('sleep_logs')||'{}');
+  let sleepTotal=0, sleepCount=0, sleepBefore23=0;
+  for(let i=0;i<7;i++){
+    const d=new Date(today);
+    d.setDate(d.getDate()-(todayDow-i));
+    const ds=fmt(d);
+    const s=sleepData[ds];
+    if(s){
+      const [sh,sm]=s.sleep.split(':').map(Number);
+      const [wh,wm]=s.wake.split(':').map(Number);
+      let mins=(wh*60+wm)-(sh*60+sm);
+      if(mins<0) mins+=24*60;
+      sleepTotal+=mins; sleepCount++;
+      if(sh*60+sm<=23*60) sleepBefore23++;
+    }
+  }
+  if(sleepCount){
+    const avgH=Math.floor(sleepTotal/sleepCount/60);
+    const avgM=Math.round(sleepTotal/sleepCount%60);
+    document.getElementById('dash-s-week').textContent=`${avgH}ч ${avgM}м`;
+    document.getElementById('dash-sleep-23').textContent=`до 23:00: ${sleepBefore23}/${sleepCount} дней`;
+  }
+}
+
+function renderStreak(){
+  const wLogs=JSON.parse(localStorage.getItem('wlogs')||'[]');
+  const trained=new Set(wLogs.map(l=>l.date));
+  const days=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const todayDow=(today.getDay()+6)%7;
+  let streak=0;
+  const row=document.getElementById('streak-row');
+  if(!row) return;
+  row.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=new Date(today);
+    d.setDate(d.getDate()-(todayDow-i));
+    const ds=fmt(d);
+    const done=trained.has(ds);
+    const isToday=i===todayDow;
+    const isFuture=i>todayDow;
+    row.innerHTML+=`<div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+      <div style="width:32px;height:32px;border-radius:8px;background:${done?'#4F46E5':isFuture?'#f0f0f0':'rgba(0,0,0,.05)'};display:flex;align-items:center;justify-content:center;font-size:14px;color:${done?'#fff':'#ccc'};border:${isToday&&!done?'2px solid #4F46E5':'none'};">${done?'✓':'—'}</div>
+      <div style="font-size:9px;color:${isToday?'#4F46E5':'var(--tg-theme-hint-color,#888)'};">${days[i]}</div>
+    </div>`;
+  }
+  let s=0; const d2=new Date(today);
+  while(trained.has(fmt(d2))){s++;d2.setDate(d2.getDate()-1);}
+  document.getElementById('streak-label').textContent=`🔥 ${s} ${s===1?'день':s<5?'дня':'дней'} подряд`;
+}
+
+// ======= БАДЫ =======
+const BADS_PERIODS = [
+  {
+    name: 'Период 1', days: 3,
+    schedule: [
+      {time:'🌅 Утро', sub:'До еды', items:[
+        {name:'Фитолизат гастро', dose:'½ ч.л. в ½ стакана тёплой воды за 20 мин до еды'},
+        {name:'Тайга 8 экстра', dose:'2 мл в стакане воды комнатной температуры перед завтраком'},
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+      ]},
+      {time:'🌅 Утро', sub:'Во время еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+        {name:'8 незаменимых аминокислот', dose:'2 таблетки во время еды'},
+      ]},
+      {time:'☀️ Обед', sub:'Перед едой', items:[
+        {name:'Метабио концентрат', dose:'1 стик в воде за 15–30 мин до еды'},
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+      ]},
+      {time:'☀️ Обед', sub:'Во время еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+        {name:'Липосомальный цинк', dose:'1 капсула обязательно во время еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'До еды', items:[
+        {name:'Фитолизат гастро', dose:'½ ч.л. в ½ стакана тёплой воды за 20 мин до еды'},
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+        {name:'Метабио концентрат', dose:'1 стик в воде за 15–30 мин до еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'Во время еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+        {name:'8 незаменимых аминокислот', dose:'2 таблетки во время еды'},
+      ]},
+      {time:'🌛 Вечер', sub:'', items:[
+        {name:'Магний', dose:'1 таблетка за 1–2 часа до сна'},
+      ]},
+    ]
+  },
+  {
+    name: 'Период 2', days: 8,
+    schedule: [
+      {time:'🌅 Утро', sub:'До еды', items:[
+        {name:'Тайга 8 экстра', dose:'2 мл в стакане воды комнатной температуры перед завтраком'},
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+      ]},
+      {time:'🌅 Утро', sub:'Во время еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+        {name:'8 незаменимых аминокислот', dose:'2 таблетки во время еды'},
+      ]},
+      {time:'☀️ Обед', sub:'Перед едой', items:[
+        {name:'Метабио концентрат', dose:'1 стик в воде за 15–30 мин до еды'},
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+      ]},
+      {time:'☀️ Обед', sub:'Во время еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+        {name:'Липосомальный цинк', dose:'1 капсула обязательно во время еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'До еды', items:[
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+        {name:'Метабио концентрат', dose:'1 стик в воде за 15–30 мин до еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'Во время еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+        {name:'8 незаменимых аминокислот', dose:'2 таблетки во время еды'},
+      ]},
+      {time:'🌛 Вечер', sub:'', items:[
+        {name:'Магний', dose:'1 таблетка за 1–2 часа до сна'},
+      ]},
+    ]
+  },
+  {
+    name: 'Период 3', days: 8,
+    schedule: [
+      {time:'🌅 Утро', sub:'До еды', items:[
+        {name:'Тайга 8 экстра', dose:'2 мл в стакане воды комнатной температуры перед завтраком'},
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+      ]},
+      {time:'🌅 Утро', sub:'Во время еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+        {name:'8 незаменимых аминокислот', dose:'2 таблетки во время еды'},
+      ]},
+      {time:'☀️ Обед', sub:'Перед едой', items:[
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+      ]},
+      {time:'☀️ Обед', sub:'Во время еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+        {name:'Липосомальный цинк', dose:'1 капсула обязательно во время еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'До еды', items:[
+        {name:'Кальция бутират', dose:'1 капсула за 15–30 мин до еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'Во время еды', items:[
+        {name:'8 незаменимых аминокислот', dose:'2 таблетки во время еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'После еды', items:[
+        {name:'Микразим', dose:'1 капсула во время или после еды'},
+      ]},
+      {time:'🌛 Вечер', sub:'', items:[
+        {name:'Магний', dose:'1 таблетка за 1–2 часа до сна'},
+      ]},
+    ]
+  },
+  {
+    name: 'Период 4', days: 31,
+    schedule: [
+      {time:'🌅 Утро', sub:'До еды', items:[
+        {name:'Тайга 8 экстра', dose:'2 мл в стакане воды комнатной температуры перед завтраком'},
+      ]},
+      {time:'🌅 Утро', sub:'Во время еды', items:[
+        {name:'В комплекс липосомный', dose:'1 капсула во время еды'},
+      ]},
+      {time:'☀️ Обед', sub:'Во время еды', items:[
+        {name:'Липосомальный цинк', dose:'1 капсула обязательно во время еды'},
+        {name:'Пробио ментал', dose:'1 капсула во время еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'Во время еды', items:[
+        {name:'Пробио ментал', dose:'1 капсула во время еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'После еды', items:[
+        {name:'Пробиобуст', dose:'1 капсула после еды'},
+      ]},
+      {time:'🌛 Вечер', sub:'', items:[
+        {name:'Магний', dose:'1 таблетка за 1–2 часа до сна'},
+      ]},
+    ]
+  },
+  {
+    name: 'Период 5', days: 30,
+    schedule: [
+      {time:'🌅 Утро', sub:'Во время еды', items:[
+        {name:'В комплекс липосомный', dose:'1 капсула во время еды'},
+      ]},
+      {time:'☀️ Обед', sub:'Во время еды', items:[
+        {name:'Липосомальный цинк', dose:'1 капсула обязательно во время еды'},
+      ]},
+      {time:'🌙 Ужин', sub:'После еды', items:[
+        {name:'Пробиобуст', dose:'1 капсула после еды'},
+      ]},
+      {time:'🌛 Вечер', sub:'', items:[
+        {name:'Магний', dose:'1 таблетка за 1–2 часа до сна'},
+      ]},
+    ]
+  },
+];
+
+const TOTAL_DAYS = BADS_PERIODS.reduce((s,p)=>s+p.days,0);
+
+function getBadsState(){
+  return JSON.parse(localStorage.getItem('bads_state')||'null');
+}
+function saveBadsState(s){
+  localStorage.setItem('bads_state',JSON.stringify(s));
+}
+
+function startBads(){
+  const state = {
+    startDate: fmt(today),
+    activeDays: 0,
+    skippedToday: false,
+    checks: {}
+  };
+  saveBadsState(state);
+  document.getElementById('bads-start-screen').style.display='none';
+  const a=document.getElementById('bads-active-screen');
+  a.style.display='flex';
+  renderBads();
+}
+
+function getPeriodForDay(dayNum){
+  let d=0;
+  for(let i=0;i<BADS_PERIODS.length;i++){
+    d+=BADS_PERIODS[i].days;
+    if(dayNum<=d) return {period:BADS_PERIODS[i], periodIdx:i+1, dayInPeriod:dayNum-(d-BADS_PERIODS[i].days)};
+  }
+  return {period:BADS_PERIODS[BADS_PERIODS.length-1], periodIdx:BADS_PERIODS.length, dayInPeriod:BADS_PERIODS[BADS_PERIODS.length-1].days};
+}
+
+function renderBads(){
+  const state=getBadsState();
+  if(!state) return;
+
+  const startD=new Date(state.startDate);
+  const badsSkipped=state.skipped||{};
+  const badsTodayKey=fmt(today);
+  const isTodaySkipped=badsSkipped[badsTodayKey]||false;
+
+  // Автопереход: проверяем вчерашний день
+  const badsYesterday=new Date(today);
+  badsYesterday.setDate(badsYesterday.getDate()-1);
+  const badsYesterdayKey=fmt(badsYesterday);
+  const lastCheckedDate=state.lastCheckedDate||'';
+
+  if(lastCheckedDate!==badsTodayKey){
+    const yChecks=state.checks[badsYesterdayKey]||{};
+    const yChecked=Object.values(yChecks).filter(Boolean).length;
+    const yDay=(state.activeDays||0)+1;
+    const {period:yPeriod}=getPeriodForDay(yDay);
+    let yTotal=0;
+    yPeriod.schedule.forEach(b=>yTotal+=b.items.length);
+    const yPct=yTotal?yChecked/yTotal:0;
+    const ySkipped=badsSkipped[badsYesterdayKey]||false;
+
+    if(lastCheckedDate && !ySkipped && yPct>=0.5){
+      state.activeDays=(state.activeDays||0)+1;
+    }
+    state.lastCheckedDate=badsTodayKey;
+    saveBadsState(state);
+  }
+
+  const activeDays=state.activeDays||0;
+  const currentDay=activeDays+1;
+
+  const {period,periodIdx,dayInPeriod}=getPeriodForDay(currentDay);
+
+  document.getElementById('bads-period-label').textContent=`${period.name} · День ${dayInPeriod} из ${period.days}`;
+  document.getElementById('bads-day-label').textContent=`День ${currentDay} из ${TOTAL_DAYS}`;
+  document.getElementById('bads-date-label').textContent=today.toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+
+  const badsDayKey=fmt(today);
+  const todayChecks=state.checks[badsDayKey]||{};
+
+  // Build schedule
+  const sched=document.getElementById('bads-schedule');
+  let html='';
+  let totalItems=0;
+  let checkedItems=0;
+  let lastTime='';
+
+  period.schedule.forEach((block,bi)=>{
+    if(block.time!==lastTime){
+      if(lastTime!=='') html+='<div style="height:8px;"></div>';
+      html+=`<div style="font-size:10px;font-weight:500;opacity:0.5;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">${block.time}</div>`;
+      lastTime=block.time;
+    }
+    if(block.sub){
+      html+=`<div style="font-size:9px;color:#aaa;margin-bottom:4px;margin-top:4px;">${block.sub}</div>`;
+    }
+    block.items.forEach((item,ii)=>{
+      const key=`${bi}-${ii}`;
+      const isChecked=todayChecks[key]||false;
+      if(isChecked) checkedItems++;
+      totalItems++;
+      html+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:0.5px solid rgba(0,0,0,.05);">
+        <div onclick="toggleBad('${key}')" style="width:20px;height:20px;border-radius:6px;border:1.5px solid ${isChecked?'#2AABEE':'#ddd'};flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:${isChecked?'#2AABEE':'transparent'};color:#fff;font-size:12px;">${isChecked?'✓':''}</div>
+        <div><div style="font-size:12px;font-weight:500;">${item.name}</div><div style="font-size:10px;opacity:0.5;margin-top:2px;line-height:1.4;">${item.dose}</div></div>
+      </div>`;
+    });
+  });
+  sched.innerHTML=html;
+
+  const pct=totalItems?Math.round(checkedItems/totalItems*100):0;
+  document.getElementById('bads-prog-fill').style.width=pct+'%';
+  document.getElementById('bads-prog-num').textContent=checkedItems+'/'+totalItems;
+
+  const coursePct=Math.round(currentDay/TOTAL_DAYS*100);
+  document.getElementById('bads-course-fill').style.width=coursePct+'%';
+  document.getElementById('bads-course-num').textContent=`${currentDay} / ${TOTAL_DAYS} дней`;
+  const endDate=new Date(startD);
+  endDate.setDate(endDate.getDate()+TOTAL_DAYS);
+  document.getElementById('bads-course-end').textContent=`Конец курса: ${endDate.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}`;
+
+  // Update skip button
+  const badsSkipBtn=document.getElementById('skip-btn');
+  if(badsSkipBtn){
+    if(isTodaySkipped){
+      badsSkipBtn.textContent='❌ Сегодня пропущено';
+      badsSkipBtn.style.background='rgba(231,76,60,0.08)';
+      badsSkipBtn.style.color='#c0392b';
+      badsSkipBtn.disabled=true;
+    } else {
+      badsSkipBtn.textContent='Пропустить сегодня';
+      badsSkipBtn.style.background='rgba(0,0,0,0.04)';
+      badsSkipBtn.style.color='rgba(0,0,0,0.4)';
+      badsSkipBtn.disabled=false;
+    }
+  }
+}
+
+function toggleBad(key){
+  const state=getBadsState();
+  const todayKey=fmt(today);
+  if(!state.checks[todayKey]) state.checks[todayKey]={};
+  state.checks[todayKey][key]=!state.checks[todayKey][key];
+  saveBadsState(state);
+  renderBads();
+}
+
+function skipBadDay(){
+  const state=getBadsState();
+  const skipKey=fmt(today);
+  state.skipped=state.skipped||{};
+  state.skipped[skipKey]=true;
+  if(state.checks[skipKey]) delete state.checks[skipKey];
+  saveBadsState(state);
+  renderBads();
+}
+
+function buildScheduleText(dayNum){
+  const {period}=getPeriodForDay(dayNum);
+  const d=new Date(today);
+  d.setDate(d.getDate()+1);
+  const dateStr=d.toLocaleDateString('ru-RU',{day:'numeric',month:'long'});
+  let text=`💊 БАДы для Ильи — ${dateStr} (День ${dayNum} из ${TOTAL_DAYS})\n`;
+  text+=`📅 ${period.name}\n`;
+  let lastTime='';
+  period.schedule.forEach(block=>{
+    if(block.time!==lastTime){text+=`\n${block.time}\n`;lastTime=block.time;}
+    if(block.sub) text+=`  ${block.sub}:\n`;
+    block.items.forEach(item=>{text+=`  • ${item.name} — ${item.dose}\n`;});
+  });
+  return text;
+}
+
+function toggleTomorrowSchedule(){
+  const state=getBadsState();
+  if(!state) return;
+  const tomorrowDay=(state.activeDays||0)+2;
+  const text=buildScheduleText(tomorrowDay);
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>{
+      const btn=document.getElementById('tomorrow-btn');
+      btn.textContent='✓ Скопировано! Вставь жене в Telegram';
+      btn.style.background='rgba(39,174,96,0.2)';
+      setTimeout(()=>{
+        btn.textContent='📋 Скопировать расписание для жены на завтра';
+        btn.style.background='rgba(39,174,96,0.1)';
+      },3000);
+    });
+  } else {
+    const ta=document.createElement('textarea');
+    ta.value=text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn=document.getElementById('tomorrow-btn');
+    btn.textContent='✓ Скопировано! Вставь жене в Telegram';
+    setTimeout(()=>{btn.textContent='📋 Скопировать расписание для жены на завтра';},3000);
+  }
+}
+
+function initBads(){
+  const state=getBadsState();
+  if(state){
+    document.getElementById('bads-start-screen').style.display='none';
+    const a=document.getElementById('bads-active-screen');
+    a.style.display='flex';
+    a.style.flexDirection='column';
+    a.style.gap='10px';
+    renderBads();
+  }
+}
+initBads();
+renderDash();
 </script>
 </body>
 </html>
