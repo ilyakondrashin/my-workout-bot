@@ -1370,6 +1370,15 @@ function switchNTab(tab){
   document.getElementById('ntab-'+tab).style.color='#27ae60';
   document.getElementById('ntab-'+tab).style.fontWeight='500';
   if(tab==='today') renderNutritionToday();
+  if(tab==='add'){
+    // Reset photo zone
+    const zone=document.getElementById('n-photo-zone');
+    zone.innerHTML=`<div style="font-size:32px;margin-bottom:8px;">📷</div><div style="font-size:13px;font-weight:500;color:var(--tg-theme-text-color,#111);">Сфотографируй еду</div><div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-top:4px;">Claude проверит по твоему FODMAP протоколу</div>`;
+    zone.onclick=triggerFoodPhoto;
+    document.getElementById('n-ai-result').style.display='none';
+    document.getElementById('n-manual-result').style.display='none';
+    document.getElementById('n-file-input').value='';
+  }
 }
 
 function checkFodmap(text){
@@ -1473,8 +1482,11 @@ async function analyzeFoodPhoto(event){
       const result=JSON.parse(text);
       showPhotoResult(result);
     }catch(err){
-      zone.innerHTML='<div style="padding:12px;text-align:center;font-size:12px;color:#dc2626;">Ошибка анализа. Введи вручную.</div>';
-      document.getElementById('n-photo-zone').onclick=triggerFoodPhoto;
+      console.error('Photo analysis error:', err);
+      zone.innerHTML=`<div style="font-size:32px;margin-bottom:8px;">📷</div><div style="font-size:13px;font-weight:500;color:var(--tg-theme-text-color,#111);">Сфотографируй еду</div><div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-top:4px;">Claude проверит по твоему FODMAP протоколу</div>`;
+      zone.onclick=triggerFoodPhoto;
+      document.getElementById('n-file-input').value='';
+      alert('Ошибка: ' + err.message + '\nПопробуй ещё раз или введи вручную.');
     }
   };
   reader.readAsDataURL(file);
