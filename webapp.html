@@ -291,12 +291,89 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
-    <!-- ПИТАНИЕ (заглушка) -->
+    <!-- ПИТАНИЕ -->
     <div id="sec-nutrition" class="sec">
-      <div class="card" style="text-align:center;padding:30px 20px;">
-        <div style="font-size:48px;margin-bottom:16px;">🥗</div>
-        <div style="font-size:15px;font-weight:500;margin-bottom:8px;">Питание</div>
-        <div style="font-size:12px;opacity:0.6;line-height:1.6;">Скоро появится трекер питания с распознаванием еды по фото и проверкой по твоему FODMAP протоколу.</div>
+      <div style="display:flex;background:rgba(0,0,0,0.05);border-radius:10px;padding:2px;gap:2px;">
+        <button id="ntab-today" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;background:#fff;color:#27ae60;" onclick="switchNTab('today')">Сегодня</button>
+        <button id="ntab-add" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:var(--tg-theme-hint-color,#888);" onclick="switchNTab('add')">+ Добавить</button>
+        <button id="ntab-plan" style="flex:1;padding:8px;border:none;border-radius:8px;font-size:12px;cursor:pointer;background:transparent;color:var(--tg-theme-hint-color,#888);" onclick="switchNTab('plan')">📋 План</button>
+      </div>
+
+      <!-- СЕГОДНЯ -->
+      <div id="nsec-today" style="display:flex;flex-direction:column;gap:10px;">
+        <div id="nutrition-day-score" style="background:rgba(39,174,96,.06);border:0.5px solid rgba(39,174,96,.2);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:11px;color:var(--tg-theme-hint-color,#888);margin-bottom:2px;">Соответствие плану</div>
+            <div style="font-size:14px;font-weight:500;color:#27ae60;" id="n-score-label">Нет данных</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:22px;font-weight:500;color:#27ae60;" id="n-score-num">—</div>
+            <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">продуктов в плане</div>
+          </div>
+        </div>
+
+        <div class="card" id="nutrition-meals-card">
+          <div id="nutrition-meals-list"></div>
+          <button onclick="switchNTab('add')" style="width:100%;padding:10px;background:rgba(39,174,96,.08);border:0.5px dashed rgba(39,174,96,.3);border-radius:8px;color:#27ae60;font-size:12px;font-weight:500;cursor:pointer;margin-top:8px;">+ Добавить приём пищи</button>
+        </div>
+      </div>
+
+      <!-- ДОБАВИТЬ -->
+      <div id="nsec-add" style="display:none;flex-direction:column;gap:10px;">
+        <div class="card">
+          <div style="font-size:11px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">Распознать по фото</div>
+          <div id="n-photo-zone" style="border:1.5px dashed rgba(39,174,96,.3);border-radius:10px;padding:20px 16px;text-align:center;cursor:pointer;background:rgba(39,174,96,.02);" onclick="triggerFoodPhoto()">
+            <div style="font-size:32px;margin-bottom:8px;">📷</div>
+            <div style="font-size:13px;font-weight:500;color:var(--tg-theme-text-color,#111);">Сфотографируй еду</div>
+            <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-top:4px;">Claude проверит по твоему FODMAP протоколу</div>
+          </div>
+          <input type="file" id="n-file-input" accept="image/*" capture="environment" style="display:none;" onchange="analyzeFoodPhoto(event)">
+          <div id="n-ai-result" style="display:none;margin-top:10px;"></div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:11px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">Ввести вручную</div>
+          <select id="n-meal-select" style="width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:13px;outline:none;margin-bottom:8px;background:var(--tg-theme-secondary-bg-color,#fff);color:var(--tg-theme-text-color,#111);">
+            <option value="morning">🌅 Утро</option>
+            <option value="lunch">☀️ Обед</option>
+            <option value="snack">🌤 Полдник</option>
+            <option value="dinner">🌙 Ужин</option>
+          </select>
+          <input type="text" id="n-manual-input" placeholder="Что съел? Например: гречка с курицей" style="width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:13px;outline:none;margin-bottom:8px;background:var(--tg-theme-secondary-bg-color,#fff);color:var(--tg-theme-text-color,#111);">
+          <button onclick="checkManualFood()" style="width:100%;padding:11px;background:#27ae60;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;" id="n-manual-btn">Проверить и добавить</button>
+          <div id="n-manual-result" style="display:none;margin-top:8px;"></div>
+        </div>
+      </div>
+
+      <!-- ПЛАН -->
+      <div id="nsec-plan" style="display:none;flex-direction:column;gap:10px;">
+        <div class="card">
+          <div style="font-size:11px;font-weight:500;color:#27ae60;text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">✅ Разрешено</div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:500;margin-bottom:6px;">🍎 Фрукты (макс. 1 в день)</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;"><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Банан зелёный</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Киви</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Лимон</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Мандарин</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Апельсин</span></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:500;margin-bottom:6px;">🫐 Ягоды</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;"><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Черника</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Голубика</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Брусника</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Малина</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Клюква</span></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:500;margin-bottom:6px;">🥩 Белок</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;"><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Говядина</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Курица</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Рыба</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Морепродукты</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Индейка</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Кролик</span></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:500;margin-bottom:6px;">🌾 Зерновые б/г</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;"><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Рис</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Гречка</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Киноа</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Просо</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#eaf3de;color:#3b6d11;border:0.5px solid #c0dd97;">Амарант</span></div>
+          </div>
+          <div style="margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:500;color:#d97706;margin-bottom:6px;">⚠️ Ограниченно</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;"><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fef9e7;color:#b7770d;border:0.5px solid #fac775;">¼ авокадо</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fef9e7;color:#b7770d;border:0.5px solid #fac775;">½ чашки брокколи</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fef9e7;color:#b7770d;border:0.5px solid #fac775;">Батат</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fef9e7;color:#b7770d;border:0.5px solid #fac775;">Тыква ¼ чашки</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fef9e7;color:#b7770d;border:0.5px solid #fac775;">Клубника</span></div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:#a32d2d;margin-bottom:6px;">❌ Запрещено</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;"><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Яйца</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Глютен</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Лук</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Бобовые</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Сахар</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Молочное</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Алкоголь</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Кешью</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Миндаль</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Яблоки</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Арбуз</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Манго</span><span style="font-size:10px;padding:3px 8px;border-radius:20px;background:#fcebeb;color:#a32d2d;border:0.5px solid #f09595;">Фаст-фуд</span></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1267,6 +1344,212 @@ function initBads(){
 }
 initBads();
 renderDash();
+
+// ======= ПИТАНИЕ =======
+const FODMAP = {
+  allowed: ['говядина','курица','индейка','кролик','рыба','лосось','треска','морепродукты','креветки','гречка','рис','киноа','просо','амарант','овсянка','банан','киви','лимон','лайм','мандарин','апельсин','черника','голубика','брусника','клюква','малина','облепиха','помидор','огурец','морковь','шпинат','руккола','петрушка','кинза','базилик','болгарский перец','баклажан','кабачок','цуккини','редис','имбирь','оливки','маслины','кедровые орехи','грецкие орехи','пекан','бразильские орехи','льняное масло','оливковое масло','кокосовое масло','масло гхи','сливочное масло','зеленый чай','мятный чай','матча','вода','костный бульон','коллаген','соевый соус','кунжут','семена льна','семена тыквы','корица','куркума','тмин','розмарин'],
+  limited: ['брокколи','авокадо','батат','тыква','картофель','клубника','кокос','дыня','капуста','сельдерей','горошек'],
+  forbidden: ['яйца','яйцо','молоко','сметана','сливки','творог','кефир','йогурт','сыр','глютен','пшеница','ячмень','рожь','спельта','хлеб','макароны','нут','фасоль','чечевица','горох','хумус','лук','чеснок','грибы','спаржа','артишок','свекла','сахар','мед','фруктоза','сироп','яблоко','груша','манго','арбуз','вишня','персик','слива','абрикос','ананас','виноград','гранат','алкоголь','пиво','кофе','энергетик','газировка','сок','кешью','миндаль','фисташки','фундук','арахис','рапсовое масло','маргарин','майонез','кетчуп','колбаса','сосиска','фаст-фуд']
+};
+
+let nutritionLogs = JSON.parse(localStorage.getItem('nutrition_logs') || '{}');
+const MEAL_NAMES = {morning:'🌅 Утро', lunch:'☀️ Обед', snack:'🌤 Полдник', dinner:'🌙 Ужин'};
+const MEAL_ORDER = ['morning','lunch','snack','dinner'];
+
+function switchNTab(tab){
+  ['today','add','plan'].forEach(t=>{
+    const el=document.getElementById('nsec-'+t);
+    const btn=document.getElementById('ntab-'+t);
+    el.style.display='none';
+    btn.style.background='transparent';
+    btn.style.color='var(--tg-theme-hint-color,#888)';
+    btn.style.fontWeight='400';
+  });
+  document.getElementById('nsec-'+tab).style.display='flex';
+  document.getElementById('ntab-'+tab).style.background='#fff';
+  document.getElementById('ntab-'+tab).style.color='#27ae60';
+  document.getElementById('ntab-'+tab).style.fontWeight='500';
+  if(tab==='today') renderNutritionToday();
+}
+
+function checkFodmap(text){
+  const lc=text.toLowerCase();
+  const words=lc.split(/[\s,]+/);
+  let status='ok', found=[];
+  for(const w of words){
+    if(FODMAP.forbidden.some(f=>w.includes(f)||f.includes(w)&&w.length>3)){
+      status='bad'; found.push(w); break;
+    }
+  }
+  if(status==='ok'){
+    for(const w of words){
+      if(FODMAP.limited.some(f=>w.includes(f)||f.includes(w)&&w.length>3)){
+        status='warn'; found.push(w);
+      }
+    }
+  }
+  return {status, found};
+}
+
+function addNutritionEntry(meal, text, status){
+  const todayKey=fmt(today);
+  if(!nutritionLogs[todayKey]) nutritionLogs[todayKey]={};
+  if(!nutritionLogs[todayKey][meal]) nutritionLogs[todayKey][meal]=[];
+  nutritionLogs[todayKey][meal].push({text, status, time: new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})});
+  localStorage.setItem('nutrition_logs', JSON.stringify(nutritionLogs));
+}
+
+function renderNutritionToday(){
+  const todayKey=fmt(today);
+  const dayData=nutritionLogs[todayKey]||{};
+  const list=document.getElementById('nutrition-meals-list');
+  let html='';
+  let total=0, ok=0;
+
+  MEAL_ORDER.forEach(meal=>{
+    const items=dayData[meal]||[];
+    html+=`<div style="margin-bottom:${meal==='dinner'?'0':'12px'};">
+      <div style="font-size:12px;font-weight:500;color:var(--tg-theme-text-color,#111);margin-bottom:6px;">${MEAL_NAMES[meal]}</div>`;
+    if(!items.length){
+      html+=`<div style="font-size:11px;color:var(--tg-theme-hint-color,#888);font-style:italic;padding:4px 0;">Пусто</div>`;
+    } else {
+      items.forEach(item=>{
+        total++;
+        if(item.status==='ok') ok++;
+        const color=item.status==='ok'?'#27ae60':item.status==='warn'?'#d97706':'#dc2626';
+        const badge=item.status==='ok'?'✓ можно':item.status==='warn'?'⚠️ лимит':'✗ нельзя';
+        const bg=item.status==='ok'?'#eaf3de':item.status==='warn'?'#fef9e7':'#fcebeb';
+        html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,.05);">
+          <div>
+            <div style="font-size:12px;color:var(--tg-theme-text-color,#111);">${item.text}</div>
+            <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">${item.time}</div>
+          </div>
+          <span style="font-size:10px;padding:3px 7px;border-radius:20px;background:${bg};color:${color};font-weight:500;white-space:nowrap;">${badge}</span>
+        </div>`;
+      });
+    }
+    if(meal!=='dinner') html+=`<div style="height:0.5px;background:rgba(0,0,0,.06);margin-top:8px;"></div>`;
+    html+='</div>';
+  });
+
+  list.innerHTML=html;
+
+  const scoreEl=document.getElementById('n-score-num');
+  const labelEl=document.getElementById('n-score-label');
+  if(!total){
+    scoreEl.textContent='—';
+    labelEl.textContent='Нет данных';
+  } else {
+    scoreEl.textContent=`${ok}/${total}`;
+    const pct=Math.round(ok/total*100);
+    labelEl.textContent=pct>=90?'Отлично! ✓':pct>=70?'Хороший день ✓':pct>=50?'Есть нарушения ⚠️':'Много нарушений ❌';
+    labelEl.style.color=pct>=90?'#27ae60':pct>=70?'#27ae60':pct>=50?'#d97706':'#dc2626';
+  }
+}
+
+function triggerFoodPhoto(){
+  document.getElementById('n-file-input').click();
+}
+
+async function analyzeFoodPhoto(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  const zone=document.getElementById('n-photo-zone');
+  zone.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:#27ae60;">🔄 Claude анализирует фото...</div>';
+
+  const reader=new FileReader();
+  reader.onload=async(e)=>{
+    const base64=e.target.result.split(',')[1];
+    const mediaType=file.type;
+    try{
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:500,
+          messages:[{
+            role:'user',
+            content:[
+              {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+              {type:'text',text:`Определи что за еда на фото. Ответь ТОЛЬКО в формате JSON без markdown:
+{"dish":"название блюда на русском","ingredients":["ингредиент1","ингредиент2"],"status":"ok/warn/bad","reason":"краткое объяснение по FODMAP протоколу"}
+Правила FODMAP: запрещены яйца, молочное, глютен, лук, чеснок, бобовые, сахар, большинство фруктов кроме банана/киви/цитрусовых. Разрешены: мясо, рыба, гречка, рис, киноа, большинство овощей.`}
+            ]
+          }]
+        })
+      });
+      const data=await resp.json();
+      const text=data.content[0].text.replace(/\`\`\`json|\`\`\`/g,'').trim();
+      const result=JSON.parse(text);
+      showPhotoResult(result);
+    }catch(err){
+      zone.innerHTML='<div style="padding:12px;text-align:center;font-size:12px;color:#dc2626;">Ошибка анализа. Введи вручную.</div>';
+      document.getElementById('n-photo-zone').onclick=triggerFoodPhoto;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function showPhotoResult(result){
+  const zone=document.getElementById('n-photo-zone');
+  zone.innerHTML=`<div style="font-size:11px;color:var(--tg-theme-hint-color,#888);text-align:center;">📸 Фото проанализировано</div>`;
+  zone.onclick=null;
+
+  const color=result.status==='ok'?'#27ae60':result.status==='warn'?'#d97706':'#dc2626';
+  const bg=result.status==='ok'?'rgba(39,174,96,.05)':result.status==='warn'?'rgba(217,119,6,.05)':'rgba(220,38,38,.05)';
+  const border=result.status==='ok'?'rgba(39,174,96,.2)':result.status==='warn'?'rgba(217,119,6,.2)':'rgba(220,38,38,.2)';
+  const badge=result.status==='ok'?'✓ Соответствует плану':result.status==='warn'?'⚠️ Есть ограниченные продукты':'❌ Есть запрещённые продукты';
+
+  const resEl=document.getElementById('n-ai-result');
+  resEl.style.display='block';
+  resEl.innerHTML=`<div style="background:${bg};border:0.5px solid ${border};border-radius:10px;padding:12px;">
+    <div style="font-size:11px;font-weight:500;color:#27ae60;margin-bottom:8px;">✨ Claude распознал</div>
+    <div style="font-size:14px;font-weight:500;margin-bottom:6px;">${result.dish}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">${(result.ingredients||[]).map(i=>`<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(0,0,0,.05);">${i}</span>`).join('')}</div>
+    <div style="font-size:11px;padding:6px 10px;border-radius:6px;background:${bg};color:${color};border:0.5px solid ${border};margin-bottom:10px;">${badge}${result.reason?': '+result.reason:''}</div>
+    <select id="n-photo-meal" style="width:100%;padding:9px 12px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:12px;outline:none;margin-bottom:8px;background:var(--tg-theme-secondary-bg-color,#fff);color:var(--tg-theme-text-color,#111);">
+      <option value="morning">🌅 Утро</option>
+      <option value="lunch">☀️ Обед</option>
+      <option value="snack">🌤 Полдник</option>
+      <option value="dinner">🌙 Ужин</option>
+    </select>
+    <button onclick="confirmPhotoFood('${result.dish.replace(/'/g,"\'")}','${result.status}')" style="width:100%;padding:10px;background:#27ae60;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;">Добавить в дневник</button>
+  </div>`;
+}
+
+function confirmPhotoFood(dish, status){
+  const meal=document.getElementById('n-photo-meal').value;
+  addNutritionEntry(meal, dish, status);
+  document.getElementById('n-ai-result').style.display='none';
+  document.getElementById('n-photo-zone').innerHTML=`<div style="font-size:32px;margin-bottom:8px;">📷</div><div style="font-size:13px;font-weight:500;color:var(--tg-theme-text-color,#111);">Сфотографируй еду</div><div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-top:4px;">Claude проверит по твоему FODMAP протоколу</div>`;
+  document.getElementById('n-photo-zone').onclick=triggerFoodPhoto;
+  document.getElementById('n-file-input').value='';
+  switchNTab('today');
+}
+
+function checkManualFood(){
+  const text=document.getElementById('n-manual-input').value.trim();
+  if(!text) return;
+  const meal=document.getElementById('n-meal-select').value;
+  const {status}=checkFodmap(text);
+  const color=status==='ok'?'#27ae60':status==='warn'?'#d97706':'#dc2626';
+  const bg=status==='ok'?'rgba(39,174,96,.06)':status==='warn'?'rgba(217,119,6,.06)':'rgba(220,38,38,.06)';
+  const msg=status==='ok'?'✓ Соответствует плану':status==='warn'?'⚠️ Есть ограниченные продукты — следи за порцией':'❌ Обнаружены запрещённые продукты';
+  const res=document.getElementById('n-manual-result');
+  res.style.display='block';
+  res.innerHTML=`<div style="font-size:11px;padding:8px 10px;border-radius:8px;background:${bg};color:${color};margin-bottom:8px;">${msg}</div>
+    <button onclick="confirmManualFood('${text.replace(/'/g,"\'")}','${status}','${meal}')" style="width:100%;padding:10px;background:#27ae60;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;">Добавить в дневник</button>`;
+}
+
+function confirmManualFood(text, status, meal){
+  addNutritionEntry(meal, text, status);
+  document.getElementById('n-manual-input').value='';
+  document.getElementById('n-manual-result').style.display='none';
+  switchNTab('today');
+}
+
+renderNutritionToday();
 </script>
 </body>
 </html>
