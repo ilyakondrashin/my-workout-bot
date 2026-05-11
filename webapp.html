@@ -1514,21 +1514,44 @@ function showPhotoResult(result){
   const border=result.status==='ok'?'rgba(39,174,96,.2)':result.status==='warn'?'rgba(217,119,6,.2)':'rgba(220,38,38,.2)';
   const badge=result.status==='ok'?'✓ Соответствует плану':result.status==='warn'?'⚠️ Есть ограниченные продукты':'❌ Есть запрещённые продукты';
 
+  window._pendingFood={dish:result.dish,status:result.status,volume:result.volume||'средняя порция'};
   const resEl=document.getElementById('n-ai-result');
   resEl.style.display='block';
   resEl.innerHTML=`<div style="background:${bg};border:0.5px solid ${border};border-radius:10px;padding:12px;">
     <div style="font-size:11px;font-weight:500;color:#27ae60;margin-bottom:8px;">✨ Claude распознал</div>
-    <div style="font-size:14px;font-weight:500;margin-bottom:6px;">${result.dish}</div>
+    <div style="font-size:14px;font-weight:500;margin-bottom:4px;">${result.dish}</div>
     <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">${(result.ingredients||[]).map(i=>`<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:rgba(0,0,0,.05);">${i}</span>`).join('')}</div>
     <div style="font-size:11px;padding:6px 10px;border-radius:6px;background:${bg};color:${color};border:0.5px solid ${border};margin-bottom:10px;">${badge}${result.reason?': '+result.reason:''}</div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:500;margin-bottom:3px;">📏 Объём порции</div>
+      <div style="font-size:13px;color:#27ae60;font-weight:500;margin-bottom:6px;" id="vol-display">${result.volume||'не определён'}</div>
+      <div style="display:flex;gap:6px;">
+        <button onclick="setVolume('small')" id="vol-small" style="flex:1;padding:7px 4px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:11px;cursor:pointer;background:var(--tg-theme-secondary-bg-color,#fff);">🥣 Маленькая</button>
+        <button onclick="setVolume('medium')" id="vol-medium" style="flex:1;padding:7px 4px;border:0.5px solid #27ae60;border-radius:8px;font-size:11px;cursor:pointer;background:rgba(39,174,96,.08);color:#27ae60;font-weight:500;">🍽 Средняя</button>
+        <button onclick="setVolume('large')" id="vol-large" style="flex:1;padding:7px 4px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:11px;cursor:pointer;background:var(--tg-theme-secondary-bg-color,#fff);">🫕 Большая</button>
+      </div>
+    </div>
     <select id="n-photo-meal" style="width:100%;padding:9px 12px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:12px;outline:none;margin-bottom:8px;background:var(--tg-theme-secondary-bg-color,#fff);color:var(--tg-theme-text-color,#111);">
       <option value="morning">🌅 Утро</option>
       <option value="lunch">☀️ Обед</option>
       <option value="snack">🌤 Полдник</option>
       <option value="dinner">🌙 Ужин</option>
     </select>
-    <button onclick="confirmPhotoFood('${result.dish.replace(/'/g,"\'")}','${result.status}')" style="width:100%;padding:10px;background:#27ae60;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;">Добавить в дневник</button>
+    <button onclick="confirmPhotoFood()" style="width:100%;padding:10px;background:#27ae60;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:500;cursor:pointer;">Добавить в дневник</button>
   </div>`;
+}
+
+const VOL_LABELS={small:'Маленькая (~150г)',medium:'Средняя (~300г)',large:'Большая (~500г)'};
+function setVolume(size){
+  ['small','medium','large'].forEach(s=>{
+    const btn=document.getElementById('vol-'+s);
+    if(!btn) return;
+    if(s===size){btn.style.borderColor='#27ae60';btn.style.background='rgba(39,174,96,.08)';btn.style.color='#27ae60';btn.style.fontWeight='500';}
+    else{btn.style.borderColor='rgba(0,0,0,.12)';btn.style.background='var(--tg-theme-secondary-bg-color,#fff)';btn.style.color='var(--tg-theme-text-color,#111)';btn.style.fontWeight='400';}
+  });
+  if(window._pendingFood) window._pendingFood.volume=VOL_LABELS[size];
+  const vd=document.getElementById('vol-display');
+  if(vd) vd.textContent=VOL_LABELS[size];
 }
 
 function confirmPhotoFood(){
