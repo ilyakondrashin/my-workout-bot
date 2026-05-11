@@ -902,6 +902,25 @@ function renderDashToday(){
     document.getElementById('dash-sleep-status').style.color='var(--tg-theme-hint-color,#888)';
   }
 
+  // Питание
+  const nLogs=JSON.parse(localStorage.getItem('nutrition_logs')||'{}');
+  const todayNutrition=nLogs[todayKey]||{};
+  let nTotal=0,nOk=0;
+  Object.values(todayNutrition).forEach(items=>{
+    items.forEach(item=>{nTotal++;if(item.status==='ok')nOk++;});
+  });
+  if(nTotal){
+    const nPct=Math.round(nOk/nTotal*100);
+    document.getElementById('dash-food-today').textContent=nOk+'/'+nTotal;
+    const foodSub=document.getElementById('dash-food-sub');
+    if(foodSub) foodSub.textContent=nPct>=90?'отлично ✓':nPct>=70?'хорошо':nPct>=50?'есть нарушения':'много нарушений';
+    document.getElementById('dash-f-bar').style.width=nPct+'%';
+  } else {
+    document.getElementById('dash-food-today').textContent='—';
+    const foodSub=document.getElementById('dash-food-sub');
+    if(foodSub) foodSub.textContent='нет данных';
+  }
+
   // Общий счёт
   const wScore=Math.min(todayWorkouts*20,40);
   const bScore=Math.round(bPct*0.35);
