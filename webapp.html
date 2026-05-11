@@ -909,11 +909,13 @@ function renderDashToday(){
   Object.values(todayNutrition).forEach(items=>{
     items.forEach(item=>{nTotal++;if(item.status==='ok')nOk++;});
   });
+  let totalKcal=0;
   if(nTotal){
     const nPct=Math.round(nOk/nTotal*100);
-    document.getElementById('dash-food-today').textContent=nOk+'/'+nTotal;
+    Object.values(todayNutrition).forEach(items=>items.forEach(item=>{if(item.kbju) totalKcal+=item.kbju.kcal;}));
+    document.getElementById('dash-food-today').textContent=totalKcal?totalKcal+'ккал':nOk+'/'+nTotal;
     const foodSub=document.getElementById('dash-food-sub');
-    if(foodSub) foodSub.textContent=nPct>=90?'отлично ✓':nPct>=70?'хорошо':nPct>=50?'есть нарушения':'много нарушений';
+    if(foodSub) foodSub.textContent=nPct>=90?'план соблюдён ✓':nPct>=70?'хорошо':nPct>=50?'есть нарушения':'много нарушений';
     document.getElementById('dash-f-bar').style.width=nPct+'%';
   } else {
     document.getElementById('dash-food-today').textContent='—';
@@ -1419,11 +1421,11 @@ function checkFodmap(text){
   return {status, found};
 }
 
-function addNutritionEntry(meal, text, status){
+function addNutritionEntry(meal, text, status, kbju=null){
   const todayKey=fmt(today);
   if(!nutritionLogs[todayKey]) nutritionLogs[todayKey]={};
   if(!nutritionLogs[todayKey][meal]) nutritionLogs[todayKey][meal]=[];
-  nutritionLogs[todayKey][meal].push({text, status, time: new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})});
+  nutritionLogs[todayKey][meal].push({text, status, time: new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}), kbju});
   localStorage.setItem('nutrition_logs', JSON.stringify(nutritionLogs));
 }
 
@@ -1447,12 +1449,14 @@ function renderNutritionToday(){
         const color=item.status==='ok'?'#27ae60':item.status==='warn'?'#d97706':'#dc2626';
         const badge=item.status==='ok'?'✓ можно':item.status==='warn'?'⚠️ лимит':'✗ нельзя';
         const bg=item.status==='ok'?'#eaf3de':item.status==='warn'?'#fef9e7':'#fcebeb';
-        html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,.05);">
+        const kbjuHtml=item.kbju?`<div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-top:2px;">${item.kbju.kcal} ккал · Б${item.kbju.protein}г · Ж${item.kbju.fat}г · У${item.kbju.carbs}г</div>`:'';
+        html+=`<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,.05);">
           <div>
             <div style="font-size:12px;color:var(--tg-theme-text-color,#111);">${item.text}</div>
             <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">${item.time}</div>
+            ${kbjuHtml}
           </div>
-          <span style="font-size:10px;padding:3px 7px;border-radius:20px;background:${bg};color:${color};font-weight:500;white-space:nowrap;">${badge}</span>
+          <span style="font-size:10px;padding:3px 7px;border-radius:20px;background:${bg};color:${color};font-weight:500;white-space:nowrap;margin-left:8px;">${badge}</span>
         </div>`;
       });
     }
@@ -1533,7 +1537,7 @@ function showPhotoResult(result){
   const border=result.status==='ok'?'rgba(39,174,96,.2)':result.status==='warn'?'rgba(217,119,6,.2)':'rgba(220,38,38,.2)';
   const badge=result.status==='ok'?'✓ Соответствует плану':result.status==='warn'?'⚠️ Есть ограниченные продукты':'❌ Есть запрещённые продукты';
 
-  window._pendingFood={dish:result.dish,status:result.status,volume:result.volume||'средняя порция'};
+  window._pendingFood={dish:result.dish,status:result.status,volume:result.volume||'средняя порция',kcal:result.kcal||0,protein:result.protein||0,fat:result.fat||0,carbs:result.carbs||0};
   const resEl=document.getElementById('n-ai-result');
   resEl.style.display='block';
   resEl.innerHTML=`<div style="background:${bg};border:0.5px solid ${border};border-radius:10px;padding:12px;">
@@ -1550,6 +1554,24 @@ function showPhotoResult(result){
         <button onclick="setVolume('large')" id="vol-large" style="flex:1;padding:7px 4px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:11px;cursor:pointer;background:var(--tg-theme-secondary-bg-color,#fff);">🫕 Большая</button>
       </div>
     </div>
+    ${result.kcal?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">
+      <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
+        <div style="font-size:14px;font-weight:500;color:#FF6B35;">${result.kcal}</div>
+        <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">ккал</div>
+      </div>
+      <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
+        <div style="font-size:14px;font-weight:500;color:#3498db;">${result.protein}г</div>
+        <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">белки</div>
+      </div>
+      <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
+        <div style="font-size:14px;font-weight:500;color:#e67e22;">${result.fat}г</div>
+        <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">жиры</div>
+      </div>
+      <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
+        <div style="font-size:14px;font-weight:500;color:#27ae60;">${result.carbs}г</div>
+        <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">углеводы</div>
+      </div>
+    </div>`:''}
     <select id="n-photo-meal" style="width:100%;padding:9px 12px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:12px;outline:none;margin-bottom:8px;background:var(--tg-theme-secondary-bg-color,#fff);color:var(--tg-theme-text-color,#111);">
       <option value="morning">🌅 Утро</option>
       <option value="lunch">☀️ Обед</option>
@@ -1575,9 +1597,10 @@ function setVolume(size){
 
 function confirmPhotoFood(){
   const meal=document.getElementById('n-photo-meal').value;
-  const {dish,status,volume}=window._pendingFood||{};
+  const {dish,status,volume,kcal,protein,fat,carbs}=window._pendingFood||{};
   const text=volume&&volume!=='?'?`${dish} (${volume})`:dish;
-  addNutritionEntry(meal, text, status);
+  const kbju=kcal?{kcal,protein,fat,carbs}:null;
+  addNutritionEntry(meal, text, status, kbju);
   document.getElementById('n-ai-result').style.display='none';
   document.getElementById('n-photo-zone').innerHTML=`<div style="font-size:32px;margin-bottom:8px;">📷</div><div style="font-size:13px;font-weight:500;color:var(--tg-theme-text-color,#111);">Сфотографируй еду</div><div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-top:4px;">Claude проверит по твоему FODMAP протоколу</div>`;
   document.getElementById('n-photo-zone').onclick=triggerFoodPhoto;
