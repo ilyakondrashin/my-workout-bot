@@ -1466,10 +1466,22 @@ async function analyzeFoodPhoto(event){
   const zone=document.getElementById('n-photo-zone');
   zone.innerHTML='<div style="padding:16px;text-align:center;font-size:13px;color:#27ae60;">🔄 Claude анализирует фото...</div>';
 
-  const reader=new FileReader();
-  reader.onload=async(e)=>{
-    const base64=e.target.result.split(',')[1];
-    const mediaType=file.type;
+  // Сжимаем фото перед отправкой
+  const img=new Image();
+  const objectUrl=URL.createObjectURL(file);
+  img.onload=async()=>{
+    URL.revokeObjectURL(objectUrl);
+    const canvas=document.createElement('canvas');
+    const maxSize=1024;
+    let w=img.width, h=img.height;
+    if(w>maxSize||h>maxSize){
+      if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}
+      else{w=Math.round(w*maxSize/h);h=maxSize;}
+    }
+    canvas.width=w; canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    const base64=canvas.toDataURL('image/jpeg',0.8).split(',')[1];
+    const mediaType='image/jpeg';
     try{
       const resp=await fetch('/api/analyze',{
         method:'POST',
@@ -1489,7 +1501,7 @@ async function analyzeFoodPhoto(event){
       alert('Ошибка: ' + err.message + '\nПопробуй ещё раз или введи вручную.');
     }
   };
-  reader.readAsDataURL(file);
+  img.src=objectUrl;
 }
 
 function showPhotoResult(result){
@@ -1519,9 +1531,11 @@ function showPhotoResult(result){
   </div>`;
 }
 
-function confirmPhotoFood(dish, status){
+function confirmPhotoFood(){
   const meal=document.getElementById('n-photo-meal').value;
-  addNutritionEntry(meal, dish, status);
+  const {dish,status,volume}=window._pendingFood||{};
+  const text=volume&&volume!=='?'?`${dish} (${volume})`:dish;
+  addNutritionEntry(meal, text, status);
   document.getElementById('n-ai-result').style.display='none';
   document.getElementById('n-photo-zone').innerHTML=`<div style="font-size:32px;margin-bottom:8px;">📷</div><div style="font-size:13px;font-weight:500;color:var(--tg-theme-text-color,#111);">Сфотографируй еду</div><div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-top:4px;">Claude проверит по твоему FODMAP протоколу</div>`;
   document.getElementById('n-photo-zone').onclick=triggerFoodPhoto;
