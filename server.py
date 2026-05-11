@@ -2,6 +2,8 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 import os
 import json
 import urllib.request
+import urllib.error
+import traceback
 
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 
@@ -27,20 +29,33 @@ class Handler(SimpleHTTPRequestHandler):
 
     def handle_analyze(self):
         try:
+            print(f"[API] Получен запрос, ключ: {ANTHROPIC_API_KEY[:10]}...")
             length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(length)
             data = json.loads(body)
+
             payload = json.dumps({
                 'model': 'claude-sonnet-4-20250514',
                 'max_tokens': 500,
                 'messages': [{
                     'role': 'user',
                     'content': [
-                        {'type': 'image', 'source': {'type': 'base64', 'media_type': data['mediaType'], 'data': data['imageData']}},
-                        {'type': 'text', 'text': 'Определи что за еда на фото. Ответь ТОЛЬКО в формате JSON без markdown: {"dish":"название блюда на русском","ingredients":["ингредиент1","ингредиент2"],"status":"ok/warn/bad","reason":"краткое объяснение по FODMAP"} Правила FODMAP: запрещены яйца, молочное, глютен, лук, чеснок, бобовые, сахар. Разрешены: мясо, рыба, гречка, рис, киноа, большинство овощей.'}
+                        {
+                            'type': 'image',
+                            'source': {
+                                'type': 'base64',
+                                'media_type': data['mediaType'],
+                                'data': data['imageData']
+                            }
+                        },
+                        {
+                            'type': 'text',
+                            'text': 'Определи что за еда на фото. Ответь ТОЛЬКО в формате JSON без markdown: {"dish":"название блюда на русском","ingredients":["ингредиент1","ингредиент2"],"status":"ok/warn/bad","reason":"краткое объяснение по FODMAP"} Правила FODMAP: запрещены яйца, молочное, глютен, лук, чеснок, бобовые, сахар. Разрешены: мясо, рыба, гречка, рис, киноа, большинство овощей.'
+                        }
                     ]
                 }]
             }).encode('utf-8')
+
             req = urllib.request.Request(
                 'https://api.anthropic.com/v1/messages',
                 data=payload,
@@ -51,14 +66,28 @@ class Handler(SimpleHTTPRequestHandler):
                 },
                 method='POST'
             )
-            with urllib.request.urlopen(req) as resp:
+
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 result = json.loads(resp.read())
+
+            print(f"[API] Успешно!")
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps(result).encode('utf-8'))
+
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode('utf-8')
+            print(f"[API] HTTP Error {e.code}: {error_body}")
+            self.send_response(500)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({'error': f'HTTP {e.code}: {error_body}'}).encode('utf-8'))
+
         except Exception as e:
+            print(f"[API] Ошибка: {traceback.format_exc()}")
             self.send_response(500)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
@@ -69,9 +98,7 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         super().end_headers()
 
-    def log_message(self, format, *args):
-        pass
-
 port = int(os.environ.get('PORT', 8080))
 print(f'Сервер запущен на порту {port}')
+print(f'API ключ установлен: {"Да" if ANTHROPIC_API_KEY else "НЕТ!"}')
 HTTPServer(('0.0.0.0', port), Handler).serve_forever()
