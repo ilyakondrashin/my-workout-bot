@@ -1462,25 +1462,14 @@ async function analyzeFoodPhoto(event){
     const base64=e.target.result.split(',')[1];
     const mediaType=file.type;
     try{
-      const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      const resp=await fetch('/api/analyze',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          model:'claude-sonnet-4-20250514',
-          max_tokens:500,
-          messages:[{
-            role:'user',
-            content:[
-              {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
-              {type:'text',text:`Определи что за еда на фото. Ответь ТОЛЬКО в формате JSON без markdown:
-{"dish":"название блюда на русском","ingredients":["ингредиент1","ингредиент2"],"status":"ok/warn/bad","reason":"краткое объяснение по FODMAP протоколу"}
-Правила FODMAP: запрещены яйца, молочное, глютен, лук, чеснок, бобовые, сахар, большинство фруктов кроме банана/киви/цитрусовых. Разрешены: мясо, рыба, гречка, рис, киноа, большинство овощей.`}
-            ]
-          }]
-        })
+        body:JSON.stringify({imageData:base64,mediaType:mediaType})
       });
       const data=await resp.json();
-      const text=data.content[0].text.replace(/\`\`\`json|\`\`\`/g,'').trim();
+      if(data.error) throw new Error(data.error);
+      const text=data.content[0].text.replace(/```json|```/g,'').trim();
       const result=JSON.parse(text);
       showPhotoResult(result);
     }catch(err){
