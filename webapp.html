@@ -183,6 +183,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
           </div>
         </div>
+        <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid rgba(0,0,0,.06);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;">✅ Задачи на сегодня</div>
+            <div style="font-size:11px;font-weight:500;color:#5856D6;" id="tasks-progress-label">0/0</div>
+          </div>
+          <div style="background:rgba(0,0,0,.06);border-radius:4px;height:5px;overflow:hidden;margin-bottom:12px;">
+            <div id="tasks-progress-fill" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#5856D6,#AF52DE);width:0%;transition:width .3s;"></div>
+          </div>
+          <div id="tasks-list"></div>
+          <div style="display:flex;gap:8px;margin-top:10px;">
+            <input id="new-task-input" placeholder="Добавить задачу..." style="flex:1;padding:9px 12px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:12px;outline:none;background:var(--tg-theme-secondary-bg-color,#f8f8f8);color:var(--tg-theme-text-color,#111);">
+            <button onclick="addCustomTask()" style="padding:9px 12px;background:#5856D6;border:none;border-radius:8px;color:#fff;font-size:12px;cursor:pointer;white-space:nowrap;">+ Добавить</button>
+          </div>
+        </div>
       </div>
 
       <div id="dsec-week" style="display:none;flex-direction:column;gap:10px;">
@@ -624,7 +638,7 @@ function goTab(name,btn){
   document.getElementById('htitle').textContent=titles[name]||name;
   document.getElementById('hsub').textContent=subs[name]||'';
   if(name==='workout') renderAll();
-  if(name==='dash') renderDash();
+  if(name==='dash'){renderDash();renderTasks();}
   if(name==='bads') initBads();
 }
 
@@ -1554,7 +1568,7 @@ function showPhotoResult(result){
         <button onclick="setVolume('large')" id="vol-large" style="flex:1;padding:7px 4px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:11px;cursor:pointer;background:var(--tg-theme-secondary-bg-color,#fff);">🫕 Большая</button>
       </div>
     </div>
-    ${result.kcal?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">
+    ${result.kcal?`<div id="kbju-block" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">
       <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
         <div style="font-size:14px;font-weight:500;color:#FF6B35;">${result.kcal}</div>
         <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">ккал</div>
@@ -1583,6 +1597,7 @@ function showPhotoResult(result){
 }
 
 const VOL_LABELS={small:'Маленькая (~150г)',medium:'Средняя (~300г)',large:'Большая (~500г)'};
+const VOL_MULT={small:0.5,medium:1.0,large:1.7};
 function setVolume(size){
   ['small','medium','large'].forEach(s=>{
     const btn=document.getElementById('vol-'+s);
@@ -1590,9 +1605,38 @@ function setVolume(size){
     if(s===size){btn.style.borderColor='#27ae60';btn.style.background='rgba(39,174,96,.08)';btn.style.color='#27ae60';btn.style.fontWeight='500';}
     else{btn.style.borderColor='rgba(0,0,0,.12)';btn.style.background='var(--tg-theme-secondary-bg-color,#fff)';btn.style.color='var(--tg-theme-text-color,#111)';btn.style.fontWeight='400';}
   });
-  if(window._pendingFood) window._pendingFood.volume=VOL_LABELS[size];
+  if(!window._pendingFood) return;
+  const mult=VOL_MULT[size];
+  const base=window._pendingFood._base||{kcal:window._pendingFood.kcal,protein:window._pendingFood.protein,fat:window._pendingFood.fat,carbs:window._pendingFood.carbs};
+  window._pendingFood._base=base;
+  window._pendingFood.volume=VOL_LABELS[size];
+  window._pendingFood.kcal=Math.round((base.kcal||0)*mult);
+  window._pendingFood.protein=Math.round((base.protein||0)*mult*10)/10;
+  window._pendingFood.fat=Math.round((base.fat||0)*mult*10)/10;
+  window._pendingFood.carbs=Math.round((base.carbs||0)*mult*10)/10;
   const vd=document.getElementById('vol-display');
   if(vd) vd.textContent=VOL_LABELS[size];
+  // Update KBJU display
+  const kbjuBlock=document.getElementById('kbju-block');
+  if(kbjuBlock && base.kcal){
+    kbjuBlock.innerHTML=`
+      <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
+        <div style="font-size:14px;font-weight:500;color:#FF6B35;">${window._pendingFood.kcal}</div>
+        <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">ккал</div>
+      </div>
+      <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
+        <div style="font-size:14px;font-weight:500;color:#3498db;">${window._pendingFood.protein}г</div>
+        <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">белки</div>
+      </div>
+      <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
+        <div style="font-size:14px;font-weight:500;color:#e67e22;">${window._pendingFood.fat}г</div>
+        <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">жиры</div>
+      </div>
+      <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:8px;text-align:center;">
+        <div style="font-size:14px;font-weight:500;color:#27ae60;">${window._pendingFood.carbs}г</div>
+        <div style="font-size:9px;color:var(--tg-theme-hint-color,#888);">углеводы</div>
+      </div>`;
+  }
 }
 
 function confirmPhotoFood(){
@@ -1630,6 +1674,159 @@ function confirmManualFood(text, status, meal){
 }
 
 renderNutritionToday();
+
+// ======= ЗАДАЧИ =======
+let customTasks = JSON.parse(localStorage.getItem('custom_tasks') || '{}');
+
+function saveCustomTasks(){ localStorage.setItem('custom_tasks', JSON.stringify(customTasks)); }
+
+function renderTasks(){
+  const todayKey = fmt(today);
+  const bState = getBadsState();
+  const wLogs = JSON.parse(localStorage.getItem('wlogs') || '[]');
+  const todayWorkouts = new Set(wLogs.filter(l=>l.date===todayKey).map(l=>l.name));
+
+  // Build task list
+  const tasks = [];
+
+  // Morning BADs
+  if(bState){
+    const curDay = (bState.activeDays||0)+1;
+    const {period} = getPeriodForDay(curDay);
+    const todayChecks = bState.checks[todayKey] || {};
+    period.schedule.forEach((block, bi) => {
+      const timeLabel = block.time;
+      block.items.forEach((item, ii) => {
+        const key = `${bi}-${ii}`;
+        tasks.push({
+          id: `bads-${bi}-${ii}`,
+          name: item.name,
+          time: timeLabel,
+          tag: 'БАД',
+          tagColor: '#EA580C',
+          tagBg: '#FFF7ED',
+          done: todayChecks[key] || false,
+          fixed: true
+        });
+      });
+    });
+  }
+
+  // Workouts from logs
+  const allWorkouts = [
+    {name:'Метод Вима Хофа', time:'🌅 Утро'},
+    {name:'Гимнастика для шеи (Шишонин)', time:'☀️ День'},
+    {name:'Восстановление зрения (Жданов)', time:'☀️ День'},
+    {name:'Цигун — утренняя 20 мин', time:'🌅 Утро'},
+    {name:'Цигун — утренняя зарядка 10 мин', time:'🌅 Утро'},
+    {name:'Цигун — вечерняя зарядка 20 мин', time:'🌙 Вечер'},
+    {name:'Йога нидра', time:'🌙 Вечер'},
+    {name:'Массаж глаз', time:'☀️ День'},
+  ];
+
+  allWorkouts.forEach(w => {
+    tasks.push({
+      id: `workout-${w.name}`,
+      name: w.name,
+      time: w.time,
+      tag: 'тренировка',
+      tagColor: '#4F46E5',
+      tagBg: '#EEF2FF',
+      done: todayWorkouts.has(w.name),
+      fixed: true
+    });
+  });
+
+  // Sleep task
+  tasks.push({
+    id: 'sleep-23',
+    name: 'Лечь спать до 23:00',
+    time: '🌙 Вечер',
+    tag: 'сон',
+    tagColor: '#7C3AED',
+    tagBg: '#F5F3FF',
+    done: (() => {
+      const sl = JSON.parse(localStorage.getItem('sleep_logs')||'{}')[todayKey];
+      if(!sl) return false;
+      const [h,m] = sl.sleep.split(':').map(Number);
+      return h*60+m <= 23*60;
+    })(),
+    fixed: true
+  });
+
+  // Custom tasks for today
+  const myTasks = customTasks[todayKey] || [];
+  myTasks.forEach((t,i) => {
+    tasks.push({
+      id: `custom-${i}`,
+      name: t.name,
+      time: '➕ Мои задачи',
+      tag: 'личное',
+      tagColor: '#059669',
+      tagBg: '#ECFDF5',
+      done: t.done,
+      fixed: false,
+      customIdx: i
+    });
+  });
+
+  // Group by time
+  const groups = {};
+  tasks.forEach(t => {
+    if(!groups[t.time]) groups[t.time] = [];
+    groups[t.time].push(t);
+  });
+
+  const timeOrder = ['🌅 Утро', '☀️ День', '🌙 Вечер', '➕ Мои задачи'];
+  let html = '';
+  let totalCount = tasks.length;
+  let doneCount = tasks.filter(t=>t.done).length;
+
+  timeOrder.forEach(time => {
+    if(!groups[time]) return;
+    html += `<div style="margin-bottom:10px;">
+      <div style="font-size:11px;font-weight:500;color:var(--tg-theme-hint-color,#888);margin-bottom:6px;">${time}</div>`;
+    groups[time].forEach(task => {
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid rgba(0,0,0,.05);">
+        <div onclick="toggleTask('${task.id}')" style="width:22px;height:22px;border-radius:6px;border:1.5px solid ${task.done?'#5856D6':'#ddd'};flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;background:${task.done?'#5856D6':'transparent'};color:#fff;">${task.done?'✓':''}</div>
+        <div style="flex:1;font-size:12px;color:var(--tg-theme-text-color,#111);${task.done?'text-decoration:line-through;opacity:.4;':''}">${task.name}</div>
+        <span style="font-size:9px;padding:2px 6px;border-radius:20px;background:${task.tagBg};color:${task.tagColor};font-weight:500;flex-shrink:0;">${task.tag}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('tasks-list').innerHTML = html;
+
+  const pct = totalCount ? Math.round(doneCount/totalCount*100) : 0;
+  document.getElementById('tasks-progress-fill').style.width = pct + '%';
+  document.getElementById('tasks-progress-label').textContent = `${doneCount}/${totalCount}`;
+}
+
+function toggleTask(id){
+  const todayKey = fmt(today);
+  if(id.startsWith('custom-')){
+    const idx = parseInt(id.replace('custom-',''));
+    if(!customTasks[todayKey]) customTasks[todayKey] = [];
+    customTasks[todayKey][idx].done = !customTasks[todayKey][idx].done;
+    saveCustomTasks();
+  }
+  renderTasks();
+}
+
+function addCustomTask(){
+  const input = document.getElementById('new-task-input');
+  const text = input.value.trim();
+  if(!text) return;
+  const todayKey = fmt(today);
+  if(!customTasks[todayKey]) customTasks[todayKey] = [];
+  customTasks[todayKey].push({name: text, done: false});
+  saveCustomTasks();
+  input.value = '';
+  renderTasks();
+}
+
+renderTasks();
 </script>
 </body>
 </html>
