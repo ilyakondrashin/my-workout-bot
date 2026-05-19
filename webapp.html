@@ -100,19 +100,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
 
       <div id="dsec-today" style="display:flex;flex-direction:column;gap:10px;">
-        <div id="dash-score-card" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:14px;color:#fff;display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div style="font-size:12px;opacity:.8;margin-bottom:4px;">Счёт дня</div>
-            <div style="font-size:32px;font-weight:500;" id="dash-score">0<span style="font-size:16px;opacity:.7;">/100</span></div>
-            <div style="font-size:11px;opacity:.7;margin-top:2px;" id="dash-score-label">Начни день!</div>
+        <div id="dash-score-card" style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;padding:14px;color:#fff;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div>
+              <div style="font-size:12px;opacity:.8;margin-bottom:4px;">Счёт дня</div>
+              <div style="font-size:32px;font-weight:500;" id="dash-score">0<span style="font-size:16px;opacity:.7;">/100</span></div>
+              <div style="font-size:11px;opacity:.7;margin-top:2px;" id="dash-score-label">Начни день!</div>
+            </div>
+            <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
+              <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
+                <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="6"/>
+                <circle id="dash-ring" cx="32" cy="32" r="26" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="0 163" stroke-linecap="round"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#fff;" id="dash-ring-label">0%</div>
+            </div>
           </div>
-          <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
-            <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
-              <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="6"/>
-              <circle id="dash-ring" cx="32" cy="32" r="26" fill="none" stroke="#fff" stroke-width="6" stroke-dasharray="0 163" stroke-linecap="round"/>
-            </svg>
-            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#fff;" id="dash-ring-label">0%</div>
-          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;" id="dash-factors"></div>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
@@ -121,7 +124,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div style="font-size:10px;font-weight:500;color:#4F46E5;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Тренировки</div>
             <div style="font-size:18px;font-weight:500;color:#4F46E5;" id="dash-workouts-today">0</div>
             <div style="font-size:10px;color:#4F46E5;opacity:.6;">практик выполнено</div>
-            <div style="height:4px;border-radius:2px;margin-top:8px;background:#C7D2FE;overflow:hidden;"><div id="dash-w-bar" style="height:100%;border-radius:2px;background:#4F46E5;width:0%;"></div></div>
+            <div style="font-size:10px;color:#4F46E5;margin-top:3px;display:none;" id="dash-steps"></div>
+            <div style="font-size:10px;color:#4F46E5;margin-top:1px;display:none;" id="dash-cals"></div>
+            <div style="height:4px;border-radius:2px;margin-top:6px;background:#C7D2FE;overflow:hidden;"><div id="dash-w-bar" style="height:100%;border-radius:2px;background:#4F46E5;width:0%;"></div></div>
           </div>
           <div style="border-radius:10px;padding:12px;background:#FFF7ED;border:0.5px solid #FED7AA;">
             <div style="font-size:18px;margin-bottom:4px;">💊</div>
@@ -135,7 +140,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div style="font-size:10px;font-weight:500;color:#7C3AED;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Сон</div>
             <div style="font-size:18px;font-weight:500;color:#7C3AED;" id="dash-sleep-dur">—</div>
             <div style="font-size:10px;color:#7C3AED;opacity:.6;" id="dash-sleep-time">нет данных</div>
-            <div style="height:4px;border-radius:2px;margin-top:8px;background:#DDD6FE;overflow:hidden;"><div id="dash-s-bar" style="height:100%;border-radius:2px;background:#7C3AED;width:0%;"></div></div>
+            <div style="font-size:10px;color:#7C3AED;margin-top:2px;display:none;" id="dash-sleep-score"></div>
+            <div style="height:4px;border-radius:2px;margin-top:6px;background:#DDD6FE;overflow:hidden;"><div id="dash-s-bar" style="height:100%;border-radius:2px;background:#7C3AED;width:0%;"></div></div>
           </div>
           <div style="border-radius:10px;padding:12px;background:#ECFDF5;border:0.5px solid #A7F3D0;">
             <div style="font-size:18px;margin-bottom:4px;">🥗</div>
@@ -143,6 +149,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div style="font-size:18px;font-weight:500;color:#059669;" id="dash-food-today">—</div>
             <div style="font-size:10px;color:#059669;opacity:.6;">скоро</div>
             <div style="height:4px;border-radius:2px;margin-top:8px;background:#A7F3D0;overflow:hidden;"><div id="dash-f-bar" style="height:100%;border-radius:2px;background:#059669;width:0%;"></div></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+          <div style="border-radius:10px;padding:12px;background:#EFF6FF;border:0.5px solid #BFDBFE;">
+            <div style="font-size:18px;margin-bottom:4px;">⚡</div>
+            <div style="font-size:10px;font-weight:500;color:#2563EB;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Готовность</div>
+            <div style="font-size:18px;font-weight:500;" id="dash-readiness">—</div>
+            <div style="font-size:10px;opacity:.6;" id="dash-readiness-lbl">Oura Readiness</div>
+            <div style="height:4px;border-radius:2px;margin-top:6px;background:#BFDBFE;overflow:hidden;"><div id="dash-readiness-bar" style="height:100%;border-radius:2px;background:#2563EB;width:0%;"></div></div>
+          </div>
+          <div style="border-radius:10px;padding:12px;background:#FEF2F2;border:0.5px solid #FECACA;">
+            <div style="font-size:18px;margin-bottom:4px;">😤</div>
+            <div style="font-size:10px;font-weight:500;color:#DC2626;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Стресс / Восст.</div>
+            <div style="display:flex;align-items:baseline;gap:4px;">
+              <div style="font-size:15px;font-weight:500;color:#DC2626;" id="dash-stress-val">—</div>
+              <div style="font-size:11px;opacity:.5;">/</div>
+              <div style="font-size:15px;font-weight:500;color:#27ae60;" id="dash-recov-val">—</div>
+            </div>
+            <div style="display:flex;gap:2px;margin-top:6px;height:4px;border-radius:2px;overflow:hidden;background:#FECACA;">
+              <div id="dash-stress-bar" style="height:100%;background:#DC2626;border-radius:2px;width:0%;"></div>
+            </div>
           </div>
         </div>
 
@@ -191,6 +219,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div style="background:rgba(0,0,0,.06);border-radius:4px;height:5px;overflow:hidden;margin-bottom:12px;">
             <div id="tasks-progress-fill" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#5856D6,#AF52DE);width:0%;transition:width .3s;"></div>
           </div>
+          <div id="tasks-comment" style="display:none;font-size:11px;color:var(--tg-theme-hint-color,#888);background:rgba(88,86,214,.05);border-radius:8px;padding:8px 10px;margin-bottom:10px;line-height:1.5;"></div>
           <div id="tasks-list"></div>
           <div style="display:flex;gap:8px;margin-top:10px;">
             <input id="new-task-input" placeholder="Добавить задачу..." style="flex:1;padding:9px 12px;border:0.5px solid rgba(0,0,0,.12);border-radius:8px;font-size:12px;outline:none;background:var(--tg-theme-secondary-bg-color,#f8f8f8);color:var(--tg-theme-text-color,#111);">
@@ -250,7 +279,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div id="v-cats" class="view active">
         <div class="cat-grid">
           <div class="cat-card" onclick="openCat('breath')"><div class="cat-icon">🌬️</div><div class="cat-name">Дыхание</div><div class="cat-count">1 практика</div></div>
-          <div class="cat-card" onclick="openCat('gymn')"><div class="cat-icon">🤸</div><div class="cat-name">Гимнастика</div><div class="cat-count">2 практики</div></div>
+          <div class="cat-card" onclick="openCat('gymn')"><div class="cat-icon">🤸</div><div class="cat-name">Гимнастика</div><div class="cat-count">3 практики</div></div>
           <div class="cat-card" onclick="openCat('qigong')"><div class="cat-icon">☯️</div><div class="cat-name">Цигун</div><div class="cat-count">4 практики</div></div>
           <div class="cat-card" onclick="openCat('yoga')"><div class="cat-icon">🧘</div><div class="cat-name">Йога</div><div class="cat-count">1 практика</div></div>
           <div class="cat-card" onclick="openCat('face')"><div class="cat-icon">💆</div><div class="cat-name">Фейсбилдинг</div><div class="cat-count">48 видео</div></div>
@@ -411,7 +440,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
 
       <div id="oura-data" style="display:none;flex-direction:column;gap:10px;">
-        <div class="card">
+        <div class="card" id="oura-extra"></div>
+        <div class="card" id="oura-sleep-block">
           <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:12px;">Прошлой ночью</div>
           <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
             <div style="position:relative;width:80px;height:80px;flex-shrink:0;">
@@ -459,6 +489,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </div>
         </div>
 
+        </div>
         <div class="card">
           <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">История (7 дней)</div>
           <div id="oura-history"></div>
@@ -595,7 +626,8 @@ const CATALOG={
   ]},
   gymn:{title:'🤸 Гимнастика',items:[
     {name:'Гимнастика для шеи (Шишонин)',desc:'Упражнения для шеи доктора Шишонина',private:true,url:'https://t.me/shishgimn/2'},
-    {name:'Восстановление зрения (Жданов)',desc:'Упражнения для восстановления зрения',private:true,url:'https://t.me/jdanzren/2'}
+    {name:'Восстановление зрения (Жданов)',desc:'Упражнения для восстановления зрения',private:true,url:'https://t.me/jdanzren/2'},
+    {name:'Упражнения Кегеля',desc:'Тренировка мышц тазового дна. Выполнять 4 раза в неделю.',private:true,url:'https://t.me/c/2994536092/120/2171'},
   ]},
   qigong:{title:'☯️ Цигун',items:[
     {name:'Цигун — утренняя 20 мин',desc:'Утренняя тренировка 20 минут',private:true,url:'https://t.me/liholden/2'},
@@ -1017,17 +1049,84 @@ function renderDashToday(){
     if(foodSub) foodSub.textContent='нет данных';
   }
 
-  // Общий счёт
-  const wScore=Math.min(todayWorkouts*20,40);
-  const bScore=Math.round(bPct*0.35);
-  const sScore=todaySleep?25:0;
-  const total=Math.min(wScore+bScore+sScore,100);
+  // Oura данные из кэша
+  const ouraCache=JSON.parse(localStorage.getItem('oura_cache')||'null');
+  const ouraData=ouraCache?.data||{};
+  const latestReadiness=(ouraData.readiness||[]).slice(-1)[0];
+  const latestActivity=(ouraData.activity||[]).slice(-1)[0];
+  const latestStress=(ouraData.stress||[]).slice(-1)[0];
+  const latestDailySleep=(ouraData.daily_sleep||[]).slice(-1)[0];
+
+  // Обновляем блок тренировок — добавляем шаги и калории
+  const stepsEl=document.getElementById('dash-steps');
+  const calsEl=document.getElementById('dash-cals');
+  if(stepsEl && latestActivity){
+    stepsEl.textContent='🚶 '+(latestActivity.steps||0).toLocaleString()+' шагов';
+    stepsEl.style.display='block';
+  }
+  if(calsEl && latestActivity){
+    calsEl.textContent='🔥 '+(latestActivity.active_calories||0)+' ккал';
+    calsEl.style.display='block';
+  }
+
+  // Обновляем блок сна — Oura score
+  const sleepScoreEl=document.getElementById('dash-sleep-score');
+  if(sleepScoreEl && latestDailySleep){
+    sleepScoreEl.textContent='Oura: '+(latestDailySleep.score||'—')+' pts';
+    sleepScoreEl.style.display='block';
+  }
+
+  // Готовность
+  const readyEl=document.getElementById('dash-readiness');
+  const readyBarEl=document.getElementById('dash-readiness-bar');
+  const readyLblEl=document.getElementById('dash-readiness-lbl');
+  if(readyEl && latestReadiness){
+    const rs=latestReadiness.score||0;
+    readyEl.textContent=rs+' pts';
+    if(readyBarEl) readyBarEl.style.width=rs+'%';
+    if(readyLblEl) readyLblEl.textContent=rs>=85?'Отличная ✓':rs>=70?'Хорошая':rs>=55?'Умеренная':'Низкая';
+    readyEl.style.color=rs>=85?'#27ae60':rs>=70?'#2563EB':rs>=55?'#d97706':'#dc2626';
+  }
+
+  // Стресс / Восстановление
+  const stressEl=document.getElementById('dash-stress-val');
+  const recovEl=document.getElementById('dash-recov-val');
+  const stressBarEl=document.getElementById('dash-stress-bar');
+  const recovBarEl=document.getElementById('dash-recov-bar');
+  if(stressEl && latestStress){
+    const stressMin=Math.round((latestStress.stress_high||0)/60);
+    const recovMin=Math.round((latestStress.recovery_high||0)/60);
+    stressEl.textContent=stressMin+'м';
+    if(recovEl) recovEl.textContent=recovMin+'м';
+    const total2=stressMin+recovMin||1;
+    if(stressBarEl) stressBarEl.style.width=Math.round(stressMin/total2*100)+'%';
+    if(recovBarEl) recovBarEl.style.width=Math.round(recovMin/total2*100)+'%';
+  }
+
+  // Общий счёт (теперь с Oura)
+  const wScore=Math.min(todayWorkouts*20,30);
+  const bScore=Math.round(bPct*0.25);
+  const sScore=todaySleep?20:0;
+  const readyScore=latestReadiness?Math.round((latestReadiness.score||0)*0.15):0;
+  const stressScore=latestStress?Math.max(0,10-Math.round((latestStress.stress_high||0)/600)):0;
+  const total=Math.min(wScore+bScore+sScore+readyScore+stressScore,100);
   document.getElementById('dash-score').innerHTML=`${total}<span style="font-size:16px;opacity:.7;">/100</span>`;
   const labels=['Начни день!','Неплохо 👍','Хороший день ✓','Отличный день 💪','Идеально! 🔥'];
   document.getElementById('dash-score-label').textContent=labels[Math.floor(total/25)];
   const arc=Math.round(total/100*163);
   document.getElementById('dash-ring').setAttribute('stroke-dasharray',`${arc} 163`);
   document.getElementById('dash-ring-label').textContent=total+'%';
+
+  // Факторы под кольцом
+  const factorsEl=document.getElementById('dash-factors');
+  if(factorsEl){
+    factorsEl.innerHTML=`
+      <div style="text-align:center;"><div style="font-size:11px;font-weight:500;color:rgba(255,255,255,.9);">💪 ${todayWorkouts}</div><div style="font-size:8px;opacity:.6;">трен.</div></div>
+      <div style="text-align:center;"><div style="font-size:11px;font-weight:500;color:rgba(255,255,255,.9);">💊 ${bPct}%</div><div style="font-size:8px;opacity:.6;">БАДы</div></div>
+      <div style="text-align:center;"><div style="font-size:11px;font-weight:500;color:rgba(255,255,255,.9);">🌙 ${todaySleep?Math.floor((new Date('2000-01-01T'+todaySleep.wake)-new Date('2000-01-01T'+todaySleep.sleep))/3600000*10)/10+'ч':'—'}</div><div style="font-size:8px;opacity:.6;">сон</div></div>
+      <div style="text-align:center;"><div style="font-size:11px;font-weight:500;color:rgba(255,255,255,.9);">⚡ ${latestReadiness?.score||'—'}</div><div style="font-size:8px;opacity:.6;">готовн.</div></div>
+      <div style="text-align:center;"><div style="font-size:11px;font-weight:500;color:rgba(255,255,255,.9);">😤 ${latestStress?Math.round((latestStress.stress_high||0)/60)+'м':'—'}</div><div style="font-size:8px;opacity:.6;">стресс</div></div>`;
+  }
 }
 
 function renderWeekChart(){
@@ -1460,6 +1559,26 @@ function initBads(){
 initBads();
 renderDash();
 
+// Автосинхронизация Oura при открытии если кэш старше 30 минут
+(async function autoSyncOura(){
+  const cache = localStorage.getItem('oura_cache');
+  if(cache){
+    const {time} = JSON.parse(cache);
+    if(Date.now() - time < 30 * 60 * 1000) return; // свежий кэш — не синхронизируем
+  }
+  try{
+    const resp = await fetch('/api/oura');
+    const data = await resp.json();
+    if(!data.error){
+      localStorage.setItem('oura_cache', JSON.stringify({data, time: Date.now()}));
+      renderDash(); // обновляем дашборд с новыми данными
+      console.log('[Oura] Автосинхронизация успешна');
+    }
+  }catch(e){
+    console.log('[Oura] Автосинхронизация не удалась:', e.message);
+  }
+})();
+
 // ======= ПИТАНИЕ =======
 const FODMAP = {
   allowed: ['говядина','курица','индейка','кролик','рыба','лосось','треска','морепродукты','креветки','гречка','рис','киноа','просо','амарант','овсянка','банан','киви','лимон','лайм','мандарин','апельсин','черника','голубика','брусника','клюква','малина','облепиха','помидор','огурец','морковь','шпинат','руккола','петрушка','кинза','базилик','болгарский перец','баклажан','кабачок','цуккини','редис','имбирь','оливки','маслины','кедровые орехи','грецкие орехи','пекан','бразильские орехи','льняное масло','оливковое масло','кокосовое масло','масло гхи','сливочное масло','зеленый чай','мятный чай','матча','вода','костный бульон','коллаген','соевый соус','кунжут','семена льна','семена тыквы','корица','куркума','тмин','розмарин'],
@@ -1765,7 +1884,7 @@ async function syncOura(){
   document.getElementById('oura-data').style.display='none';
   document.getElementById('oura-error').style.display='none';
   try{
-    const resp=await fetch('/api/sleep');
+    const resp=await fetch('/api/oura');
     const data=await resp.json();
     if(data.error){throw new Error(data.error);}
     renderOuraData(data);
@@ -1782,11 +1901,80 @@ async function syncOura(){
 
 function renderOuraData(data){
   const sleepArr=data.sleep||[];
-  const scoresArr=data.scores||[];
+  const scoresArr=data.daily_sleep||[];
+  const readinessArr=data.readiness||[];
+  const activityArr=data.activity||[];
+  const stressArr=data.stress||[];
+  const hrArr=data.heartrate||[];
+
+  // Show data section regardless
+  document.getElementById('oura-data').style.display='flex';
+
+  // Readiness score (usually available first)
+  const latestReadiness=readinessArr[readinessArr.length-1];
+  const latestActivity=activityArr[activityArr.length-1];
+  const latestStress=stressArr[stressArr.length-1];
+
+  // Extra metrics block
+  const extraBlock=document.getElementById('oura-extra');
+  if(extraBlock){
+    let extraHtml='';
+    if(latestReadiness){
+      const rs=latestReadiness.score||0;
+      const rc=rs>=85?'#27ae60':rs>=70?'#5856D6':rs>=55?'#d97706':'#dc2626';
+      extraHtml+=`<div style="background:rgba(88,86,214,.06);border:0.5px solid rgba(88,86,214,.2);border-radius:10px;padding:12px;margin-bottom:8px;">
+        <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-bottom:4px;">⚡ ГОТОВНОСТЬ ДНЯ</div>
+        <div style="font-size:22px;font-weight:500;color:${rc};">${rs} pts</div>
+        <div style="font-size:11px;color:${rc};">${rs>=85?'Отличная готовность':rs>=70?'Хорошая готовность':rs>=55?'Умеренная готовность':'Низкая готовность'}</div>
+      </div>`;
+    }
+    if(latestActivity){
+      extraHtml+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:10px;">
+          <div style="font-size:16px;margin-bottom:2px;">🚶</div>
+          <div style="font-size:15px;font-weight:500;">${(latestActivity.steps||0).toLocaleString()}</div>
+          <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">Шагов</div>
+        </div>
+        <div style="background:rgba(0,0,0,.04);border-radius:8px;padding:10px;">
+          <div style="font-size:16px;margin-bottom:2px;">🔥</div>
+          <div style="font-size:15px;font-weight:500;">${latestActivity.active_calories||0}</div>
+          <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">Актив. ккал</div>
+        </div>
+      </div>`;
+    }
+    if(latestStress){
+      const sd=latestStress.stress_high||0;
+      const rd=latestStress.recovery_high||0;
+      extraHtml+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <div style="background:rgba(220,38,38,.06);border-radius:8px;padding:10px;">
+          <div style="font-size:16px;margin-bottom:2px;">😤</div>
+          <div style="font-size:15px;font-weight:500;color:#dc2626;">${Math.round(sd/60)}мин</div>
+          <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">Стресс</div>
+        </div>
+        <div style="background:rgba(39,174,96,.06);border-radius:8px;padding:10px;">
+          <div style="font-size:16px;margin-bottom:2px;">🧘</div>
+          <div style="font-size:15px;font-weight:500;color:#27ae60;">${Math.round(rd/60)}мин</div>
+          <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">Восстановление</div>
+        </div>
+      </div>`;
+    }
+    if(hrArr.length){
+      const lastHr=hrArr[hrArr.length-1];
+      extraHtml+=`<div style="background:rgba(0,0,0,.04);border-radius:8px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);margin-bottom:4px;">❤️ ТЕКУЩИЙ ПУЛЬС</div>
+        <div style="font-size:22px;font-weight:500;color:#dc2626;">${lastHr.bpm} <span style="font-size:14px;">уд/мин</span></div>
+      </div>`;
+    }
+    extraBlock.innerHTML=extraHtml||'<div style="font-size:12px;color:var(--tg-theme-hint-color,#888);text-align:center;padding:8px;">Синхронизируй кольцо для получения данных</div>';
+  }
+
   if(!sleepArr.length){
+    document.getElementById('oura-sleep-block').style.display='none';
     document.getElementById('oura-error').style.display='block';
+    document.getElementById('oura-error-text').textContent='Данные сна появятся после синхронизации кольца';
     return;
   }
+  document.getElementById('oura-sleep-block').style.display='block';
 
   // Latest sleep
   const latest=sleepArr[sleepArr.length-1];
@@ -1888,127 +2076,276 @@ let customTasks = JSON.parse(localStorage.getItem('custom_tasks') || '{}');
 
 function saveCustomTasks(){ localStorage.setItem('custom_tasks', JSON.stringify(customTasks)); }
 
-function renderTasks(){
+// ======= РАСПИСАНИЕ =======
+const PRIORITY_BIOMECH = [
+  // Шея
+  'Комплекс 9: Коррекция сутулости',
+  'Комплекс 15: Мобильность плечевого сустава',
+  'Урок 5: Расслабление шеи',
+  // Грудной отдел
+  'Комплекс 4: Улучшение гибкости, раскрытие грудного отдела',
+  'Комплекс 19: Снятие зажимов грудного отдела',
+  'Урок 4: Поясница и лопатки',
+  'Урок 6: Грудные мышцы',
+  // Дыхание
+  'Комплекс 3: Коррекция домика на животе',
+  'Комплекс 14: Оптимизация дыхания — антистресс',
+  'Урок 1: Вводная — походка и осанка',
+  // Таз
+  'Комплекс 5: Коррекция гиперлордоза',
+  'Комплекс 8: Мышцы тазового дна и ягодицы',
+  'Комплекс 10: Мобильность тазобедренного сустава',
+  'Урок 2: Крестец и ягодицы',
+  'Урок 8: Раскрытие тазобедренных суставов',
+];
+
+const SECONDARY_BIOMECH = [
+  'Комплекс 1: Нейтральное выравнивание тела',
+  'Комплекс 2: Красивая и здоровая осанка',
+  'Комплекс 6: Работа кора и правильное дыхание',
+  'Комплекс 7: Улучшение баланса тела',
+  'Комплекс 11: Мобильность суставов нижних конечностей',
+  'Комплекс 12: Стабильность коленного сустава',
+  'Урок 1: Грудной отдел на ролле',
+  'Урок 3: Тазобедренный сустав и позвоночник',
+  'Урок 7: Передняя часть бедра',
+  'Урок 11: Правильная растяжка задней части бедра',
+];
+
+const FACE_PARTS = ['Часть 1', 'Часть 2', 'Часть 3', 'Часть 4'];
+
+function getLastDone(name){
+  const wLogs = JSON.parse(localStorage.getItem('wlogs')||'[]');
+  const entries = wLogs.filter(l=>l.name===name).sort((a,b)=>b.date.localeCompare(a.date));
+  return entries[0]?.date||'';
+}
+
+function getLastFacePart(){
+  const wLogs = JSON.parse(localStorage.getItem('wlogs')||'[]');
+  for(const part of [...FACE_PARTS].reverse()){
+    if(wLogs.some(l=>l.name && l.name.includes(part))) return part;
+  }
+  return null;
+}
+
+function getNextFacePart(){
+  const last = getLastFacePart();
+  if(!last) return FACE_PARTS[0];
+  const idx = FACE_PARTS.indexOf(last);
+  return FACE_PARTS[(idx+1)%FACE_PARTS.length];
+}
+
+function getLeastRecentBiomech(list){
+  const sorted = list.map(name=>({name, date:getLastDone(name)}))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  return sorted[0]?.name;
+}
+
+async function generateSchedule(){
   const todayKey = fmt(today);
-  const bState = getBadsState();
-  const wLogs = JSON.parse(localStorage.getItem('wlogs') || '[]');
+  
+  // Check if schedule already generated today
+  const saved = JSON.parse(localStorage.getItem('daily_schedule')||'{}');
+  if(saved.date === todayKey) return saved.tasks;
+
+  // Show loading
+  document.getElementById('tasks-list').innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:var(--tg-theme-hint-color,#888);">🤖 Claude составляет расписание...</div>';
+
+  // Get Oura data
+  const ouraCache = JSON.parse(localStorage.getItem('oura_cache')||'null');
+  const ouraData = ouraCache?.data||{};
+  const readiness = (ouraData.readiness||[]).slice(-1)[0];
+  const stress = (ouraData.stress||[]).slice(-1)[0];
+  const sleepScore = (ouraData.daily_sleep||[]).slice(-1)[0];
+  
+  // Get wake time
+  const sleepLogs = JSON.parse(localStorage.getItem('sleep_logs')||'{}');
+  const todaySleep = sleepLogs[todayKey] || Object.values(sleepLogs).slice(-1)[0];
+  const wakeTime = todaySleep?.wake || '08:00';
+  const [wakeH, wakeM] = wakeTime.split(':').map(Number);
+  const wokeEarly = wakeH*60+wakeM < 8*60+40;
+
+  // Get recent workouts to avoid repeats
+  const wLogs = JSON.parse(localStorage.getItem('wlogs')||'[]');
+  const recentDates = [...new Set(wLogs.map(l=>l.date))].sort().reverse().slice(0,7);
+  const recentWorkouts = wLogs.filter(l=>recentDates.includes(l.date)).map(l=>l.name);
+
+  // Build context for Claude
+  const readinessScore = readiness?.score||null;
+  const stressMin = stress?Math.round((stress.stress_high||0)/60):null;
+  const sleepScoreVal = sleepScore?.score||null;
+
+  const prompt = `Составь расписание тренировок на сегодня для пользователя.
+
+ДАННЫЕ OURA:
+- Готовность: ${readinessScore||'нет данных'} ${readinessScore?`(${readinessScore>=85?'отличная':readinessScore>=70?'хорошая':readinessScore>=55?'умеренная':'низкая'})`:''} 
+- Стресс сегодня: ${stressMin!==null?stressMin+'мин':'нет данных'}
+- Качество сна: ${sleepScoreVal||'нет данных'}
+- Проснулся: ${wakeTime} (${wokeEarly?'рано, до 8:40':'поздно, после 8:40'})
+
+ОБЯЗАТЕЛЬНЫЕ ЗАДАЧИ (всегда включай):
+- Дыхание: "Метод Вима Хофа" → утро
+- Цигун: "${wokeEarly?'Цигун — утренняя 20 мин':'Цигун — утренняя зарядка 10 мин'}" → утро
+- Массаж глаз → день
+- Фейсбилдинг: "${getNextFacePart()}" (одна часть) → день
+- Йога нидра → вечер (перед сном)
+- Лечь до 23:00 → вечер
+- Упражнения Кегеля → день (только если за последние 7 дней делал менее 4 раз, иначе не добавляй)
+
+БИОМЕХАНИКА (минимум 1 приоритетная зона в день):
+Приоритетные (шея/грудь/дыхание/таз): ${PRIORITY_BIOMECH.slice(0,8).join(', ')}
+Выбери 1-2 которые давно не делались. Недавно делал: ${[...new Set(recentWorkouts)].slice(0,10).join(', ')||'ничего'}
+
+ПРАВИЛА КОРРЕКЦИИ:
+${readinessScore && readinessScore < 60 ? '⚠️ НИЗКАЯ ГОТОВНОСТЬ: только лёгкие практики, сократи количество задач до минимума' : ''}
+${stressMin && stressMin > 60 ? '⚠️ ВЫСОКИЙ СТРЕСС: добавь дополнительное дыхание, йога нидра важна' : ''}
+${sleepScoreVal && sleepScoreVal < 60 ? '⚠️ ПЛОХОЙ СОН: сократи количество задач, приоритет на восстановление' : ''}
+
+Ответь ТОЛЬКО в формате JSON без markdown:
+{
+  "comment": "короткий комментарий про состояние и расписание (1-2 предложения)",
+  "tasks": [
+    {"name": "название", "time": "🌅 Утро|☀️ День|🌙 Вечер", "tag": "тренировка|сон|биомеханика", "priority": "high|normal"}
+  ]
+}`;
+
+  try{
+    const resp = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({schedule: true, prompt})
+    });
+    const data = await resp.json();
+    const text = data.content?.[0]?.text||'{}';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(clean);
+    
+    const schedule = {
+      date: todayKey,
+      tasks: result.tasks||[],
+      comment: result.comment||'',
+      generated: Date.now()
+    };
+    localStorage.setItem('daily_schedule', JSON.stringify(schedule));
+    return schedule.tasks;
+  }catch(e){
+    console.error('Schedule generation error:', e);
+    return getDefaultTasks(wokeEarly);
+  }
+}
+
+function getDefaultTasks(wokeEarly){
+  const facePart = getNextFacePart();
+  const biomech = getLeastRecentBiomech(PRIORITY_BIOMECH) || PRIORITY_BIOMECH[0];
+  return [
+    {name:'Метод Вима Хофа', time:'🌅 Утро', tag:'тренировка', priority:'high'},
+    {name:wokeEarly?'Цигун — утренняя 20 мин':'Цигун — утренняя зарядка 10 мин', time:'🌅 Утро', tag:'тренировка', priority:'high'},
+    {name:`Фейсбилдинг — ${facePart}`, time:'☀️ День', tag:'тренировка', priority:'high'},
+    {name:'Массаж глаз', time:'☀️ День', tag:'тренировка', priority:'high'},
+    {name:biomech, time:'☀️ День', tag:'биомеханика', priority:'high'},
+    {name:'Йога нидра', time:'🌙 Вечер', tag:'тренировка', priority:'high'},
+    {name:'Лечь спать до 23:00', time:'🌙 Вечер', tag:'сон', priority:'high'},
+  ];
+}
+
+async function renderTasks(){
+  const todayKey = fmt(today);
+  const wLogs = JSON.parse(localStorage.getItem('wlogs')||'[]');
   const todayWorkouts = new Set(wLogs.filter(l=>l.date===todayKey).map(l=>l.name));
 
-  // Build task list
-  const tasks = [];
+  // Get or generate schedule
+  const scheduleTasks = await generateSchedule();
+  const saved = JSON.parse(localStorage.getItem('daily_schedule')||'{}');
 
-  // Morning BADs
+  // Show Claude's comment
+  const commentEl = document.getElementById('tasks-comment');
+  if(commentEl && saved.comment){
+    commentEl.textContent = '🤖 '+saved.comment;
+    commentEl.style.display = 'block';
+  }
+
+  // Build BADs tasks
+  const bState = getBadsState();
+  const badsTasks = [];
   if(bState){
     const curDay = (bState.activeDays||0)+1;
     const {period} = getPeriodForDay(curDay);
-    const todayChecks = bState.checks[todayKey] || {};
-    period.schedule.forEach((block, bi) => {
-      const timeLabel = block.time;
-      block.items.forEach((item, ii) => {
-        const key = `${bi}-${ii}`;
-        tasks.push({
-          id: `bads-${bi}-${ii}`,
-          name: item.name,
-          time: timeLabel,
-          tag: 'БАД',
-          tagColor: '#EA580C',
-          tagBg: '#FFF7ED',
-          done: todayChecks[key] || false,
-          fixed: true
+    const todayChecks = bState.checks[todayKey]||{};
+    period.schedule.forEach((block,bi)=>{
+      block.items.forEach((item,ii)=>{
+        const key=`${bi}-${ii}`;
+        badsTasks.push({
+          id:`bads-${bi}-${ii}`,
+          name:item.name,
+          time:block.time,
+          tag:'БАД',
+          tagColor:'#EA580C',
+          tagBg:'#FFF7ED',
+          done:todayChecks[key]||false,
         });
       });
     });
   }
 
-  // Workouts from logs
-  const allWorkouts = [
-    {name:'Метод Вима Хофа', time:'🌅 Утро'},
-    {name:'Гимнастика для шеи (Шишонин)', time:'☀️ День'},
-    {name:'Восстановление зрения (Жданов)', time:'☀️ День'},
-    {name:'Цигун — утренняя 20 мин', time:'🌅 Утро'},
-    {name:'Цигун — утренняя зарядка 10 мин', time:'🌅 Утро'},
-    {name:'Цигун — вечерняя зарядка 20 мин', time:'🌙 Вечер'},
-    {name:'Йога нидра', time:'🌙 Вечер'},
-    {name:'Массаж глаз', time:'☀️ День'},
+  // Combine schedule + BADs + custom
+  const allTasks = [
+    ...scheduleTasks.map((t,i)=>({
+      id:`sched-${i}`,
+      name:t.name,
+      time:t.time,
+      tag:t.tag,
+      tagColor:t.tag==='биомеханика'?'#059669':t.tag==='сон'?'#7C3AED':'#4F46E5',
+      tagBg:t.tag==='биомеханика'?'#ECFDF5':t.tag==='сон'?'#F5F3FF':'#EEF2FF',
+      done:todayWorkouts.has(t.name)||(t.tag==='сон'&&t.name.includes('23:00')&&(()=>{
+        const sl=JSON.parse(localStorage.getItem('sleep_logs')||'{}')[todayKey];
+        if(!sl) return false;
+        const [h,m]=sl.sleep.split(':').map(Number);
+        return h*60+m<=23*60;
+      })()),
+      priority:t.priority
+    })),
+    ...badsTasks,
+    ...(customTasks[todayKey]||[]).map((t,i)=>({
+      id:`custom-${i}`,
+      name:t.name,
+      time:'➕ Мои задачи',
+      tag:'личное',
+      tagColor:'#059669',
+      tagBg:'#ECFDF5',
+      done:t.done,
+    }))
   ];
 
-  allWorkouts.forEach(w => {
-    tasks.push({
-      id: `workout-${w.name}`,
-      name: w.name,
-      time: w.time,
-      tag: 'тренировка',
-      tagColor: '#4F46E5',
-      tagBg: '#EEF2FF',
-      done: todayWorkouts.has(w.name),
-      fixed: true
-    });
-  });
-
-  // Sleep task
-  tasks.push({
-    id: 'sleep-23',
-    name: 'Лечь спать до 23:00',
-    time: '🌙 Вечер',
-    tag: 'сон',
-    tagColor: '#7C3AED',
-    tagBg: '#F5F3FF',
-    done: (() => {
-      const sl = JSON.parse(localStorage.getItem('sleep_logs')||'{}')[todayKey];
-      if(!sl) return false;
-      const [h,m] = sl.sleep.split(':').map(Number);
-      return h*60+m <= 23*60;
-    })(),
-    fixed: true
-  });
-
-  // Custom tasks for today
-  const myTasks = customTasks[todayKey] || [];
-  myTasks.forEach((t,i) => {
-    tasks.push({
-      id: `custom-${i}`,
-      name: t.name,
-      time: '➕ Мои задачи',
-      tag: 'личное',
-      tagColor: '#059669',
-      tagBg: '#ECFDF5',
-      done: t.done,
-      fixed: false,
-      customIdx: i
-    });
-  });
-
   // Group by time
-  const groups = {};
-  tasks.forEach(t => {
-    if(!groups[t.time]) groups[t.time] = [];
+  const groups={};
+  allTasks.forEach(t=>{
+    if(!groups[t.time]) groups[t.time]=[];
     groups[t.time].push(t);
   });
 
-  const timeOrder = ['🌅 Утро', '☀️ День', '🌙 Вечер', '➕ Мои задачи'];
-  let html = '';
-  let totalCount = tasks.length;
-  let doneCount = tasks.filter(t=>t.done).length;
+  const timeOrder=['🌅 Утро','☀️ День','🌙 Вечер','➕ Мои задачи'];
+  let html='';
+  let total=allTasks.length, done=allTasks.filter(t=>t.done).length;
 
-  timeOrder.forEach(time => {
+  timeOrder.forEach(time=>{
     if(!groups[time]) return;
-    html += `<div style="margin-bottom:10px;">
+    html+=`<div style="margin-bottom:10px;">
       <div style="font-size:11px;font-weight:500;color:var(--tg-theme-hint-color,#888);margin-bottom:6px;">${time}</div>`;
-    groups[time].forEach(task => {
-      html += `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid rgba(0,0,0,.05);">
+    groups[time].forEach(task=>{
+      const isHigh=task.priority==='high';
+      html+=`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid rgba(0,0,0,.05);">
         <div onclick="toggleTask('${task.id}')" style="width:22px;height:22px;border-radius:6px;border:1.5px solid ${task.done?'#5856D6':'#ddd'};flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;background:${task.done?'#5856D6':'transparent'};color:#fff;">${task.done?'✓':''}</div>
-        <div style="flex:1;font-size:12px;color:var(--tg-theme-text-color,#111);${task.done?'text-decoration:line-through;opacity:.4;':''}">${task.name}</div>
+        <div style="flex:1;font-size:12px;color:var(--tg-theme-text-color,#111);${task.done?'text-decoration:line-through;opacity:.4;':''}${isHigh?'font-weight:500;':''}">${task.name}</div>
         <span style="font-size:9px;padding:2px 6px;border-radius:20px;background:${task.tagBg};color:${task.tagColor};font-weight:500;flex-shrink:0;">${task.tag}</span>
       </div>`;
     });
-    html += '</div>';
+    html+='</div>';
   });
 
-  document.getElementById('tasks-list').innerHTML = html;
-
-  const pct = totalCount ? Math.round(doneCount/totalCount*100) : 0;
-  document.getElementById('tasks-progress-fill').style.width = pct + '%';
-  document.getElementById('tasks-progress-label').textContent = `${doneCount}/${totalCount}`;
+  document.getElementById('tasks-list').innerHTML=html;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('tasks-progress-fill').style.width=pct+'%';
+  document.getElementById('tasks-progress-label').textContent=`${done}/${total}`;
 }
 
 function toggleTask(id){
