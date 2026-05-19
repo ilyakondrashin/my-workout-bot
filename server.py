@@ -9,12 +9,19 @@ from datetime import datetime, timedelta
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
 OURA_TOKEN = os.environ.get('OURA_TOKEN', '')
 
+def oura_get(endpoint, start_date, end_date):
+    url = f'https://api.ouraring.com/v2/usercollection/{endpoint}?start_date={start_date}&end_date={end_date}'
+    req = urllib.request.Request(url, headers={'Authorization': f'Bearer {OURA_TOKEN}'})
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        data = json.loads(resp.read())
+    return data.get('data', [])
+
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/' or self.path == '':
             self.path = '/webapp.html'
-        elif self.path.startswith('/api/sleep'):
-            self.handle_sleep()
+        elif self.path.startswith('/api/oura'):
+            self.handle_oura()
             return
         return SimpleHTTPRequestHandler.do_GET(self)
 
@@ -32,51 +39,101 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_response(404)
             self.end_headers()
 
-    def handle_sleep(self):
+    def handle_oura(self):
         try:
             if not OURA_TOKEN:
                 self.send_json({'error': 'OURA_TOKEN не настроен'})
                 return
 
-            # Get last 7 days
             end_date = datetime.now().strftime('%Y-%m-%d')
             start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
 
-            # Fetch sleep data
-            sleep_url = f'https://api.ouraring.com/v2/usercollection/sleep?start_date={start_date}&end_date={end_date}'
-            req = urllib.request.Request(
-                sleep_url,
-                headers={'Authorization': f'Bearer {OURA_TOKEN}'}
-            )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                sleep_data = json.loads(resp.read())
+            result = {}
 
-            # Fetch daily sleep scores
-            score_url = f'https://api.ouraring.com/v2/usercollection/daily_sleep?start_date={start_date}&end_date={end_date}'
-            req2 = urllib.request.Request(
-                score_url,
-                headers={'Authorization': f'Bearer {OURA_TOKEN}'}
-            )
-            with urllib.request.urlopen(req2, timeout=10) as resp2:
-                score_data = json.loads(resp2.read())
+            # Sleep
+            try:
+                result['sleep'] = oura_get('sleep', start_date, end_date)
+                result['daily_sleep'] = oura_get('daily_sleep', start_date, end_date)
+                print(f"[OURA] Сон: {len(result['sleep'])} записей")
+            except Exception as e:
+                print(f"[OURA] Сон ошибка: {e}")
+                result['sleep'] = []
+                result['daily_sleep'] = []
 
-            print(f"[OURA] Получено {len(sleep_data.get('data',[]))} записей сна")
-            self.send_json({'sleep': sleep_data.get('data', []), 'scores': score_data.get('data', [])})
+            # Readiness
+            try:
+                result['readiness'] = oura_get('daily_readiness', start_date, end_date)
+                print(f"[OURA] Готовность: {len(result['readiness'])} записей")
+            except Exception as e:
+                print(f"[OURA] Готовность ошибка: {e}")
+                result['readiness'] = []
 
-        except urllib.error.HTTPError as e:
-            error_body = e.read().decode('utf-8')
-            print(f"[OURA] Error {e.code}: {error_body}")
-            self.send_json({'error': f'Oura API error {e.code}: {error_body}'})
+            # Activity
+            try:
+                result['activity'] = oura_get('daily_activity', start_date, end_date)
+                print(f"[OURA] Активность: {len(result['activity'])} записей")
+            except Exception as e:
+                print(f"[OURA] Активность ошибка: {e}")
+                result['activity'] = []
+
+            # Stress
+            try:
+                result['stress'] = oura_get('daily_stress', start_date, end_date)
+                print(f"[OURA] Стресс: {len(result['stress'])} записей")
+            except Exception as e:
+                print(f"[OURA] Стресс ошибка: {e}")
+                result['stress'] = []
+
+            # Heart rate (last 24h)
+            try:
+                hr_start = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%S')
+                hr_url = f'https://api.ouraring.com/v2/usercollection/heartrate?start_datetime={hr_start}'
+                req = urllib.request.Request(hr_url, headers={'Authorization': f'Bearer {OURA_TOKEN}'})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    hr_data = json.loads(resp.read())
+                result['heartrate'] = hr_data.get('data', [])[-20:]  # last 20 readings
+                print(f"[OURA] ЧСС: {len(result['heartrate'])} записей")
+            except Exception as e:
+                print(f"[OURA] ЧСС ошибка: {e}")
+                result['heartrate'] = []
+
+            self.send_json(result)
+
         except Exception as e:
-            print(f"[OURA] Exception: {traceback.format_exc()}")
+            print(f"[OURA] Общая ошибка: {traceback.format_exc()}")
             self.send_json({'error': str(e)})
 
     def handle_analyze(self):
         try:
-            print(f"[API] Получен запрос, ключ: {ANTHROPIC_API_KEY[:10]}...")
             length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(length)
             data = json.loads(body)
+
+            # Schedule generation request
+            if data.get('schedule'):
+                print(f"[SCHEDULE] Генерируем расписание...")
+                payload = json.dumps({
+                    'model': 'claude-sonnet-4-5',
+                    'max_tokens': 1000,
+                    'messages': [{'role': 'user', 'content': data['prompt']}]
+                }).encode('utf-8')
+                req = urllib.request.Request(
+                    'https://api.anthropic.com/v1/messages',
+                    data=payload,
+                    headers={
+                        'Content-Type': 'application/json',
+                        'x-api-key': ANTHROPIC_API_KEY,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    method='POST'
+                )
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    result = json.loads(resp.read())
+                print(f"[SCHEDULE] Готово!")
+                self.send_json(result)
+                return
+
+            print(f"[API] Запрос анализа фото...")
 
             prompt = (
                 'Определи что за еда на фото. Оцени примерный объём порции по размеру тарелки/посуды '
