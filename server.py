@@ -4,13 +4,18 @@ import json
 import urllib.request
 import urllib.error
 import traceback
+from datetime import datetime, timedelta
 
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+OURA_TOKEN = os.environ.get('OURA_TOKEN', '')
 
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/' or self.path == '':
             self.path = '/webapp.html'
+        elif self.path.startswith('/api/sleep'):
+            self.handle_sleep()
+            return
         return SimpleHTTPRequestHandler.do_GET(self)
 
     def do_OPTIONS(self):
@@ -26,6 +31,45 @@ class Handler(SimpleHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
+
+    def handle_sleep(self):
+        try:
+            if not OURA_TOKEN:
+                self.send_json({'error': 'OURA_TOKEN не настроен'})
+                return
+
+            # Get last 7 days
+            end_date = datetime.now().strftime('%Y-%m-%d')
+            start_date = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+
+            # Fetch sleep data
+            sleep_url = f'https://api.ouraring.com/v2/usercollection/sleep?start_date={start_date}&end_date={end_date}'
+            req = urllib.request.Request(
+                sleep_url,
+                headers={'Authorization': f'Bearer {OURA_TOKEN}'}
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                sleep_data = json.loads(resp.read())
+
+            # Fetch daily sleep scores
+            score_url = f'https://api.ouraring.com/v2/usercollection/daily_sleep?start_date={start_date}&end_date={end_date}'
+            req2 = urllib.request.Request(
+                score_url,
+                headers={'Authorization': f'Bearer {OURA_TOKEN}'}
+            )
+            with urllib.request.urlopen(req2, timeout=10) as resp2:
+                score_data = json.loads(resp2.read())
+
+            print(f"[OURA] Получено {len(sleep_data.get('data',[]))} записей сна")
+            self.send_json({'sleep': sleep_data.get('data', []), 'scores': score_data.get('data', [])})
+
+        except urllib.error.HTTPError as e:
+            error_body = e.read().decode('utf-8')
+            print(f"[OURA] Error {e.code}: {error_body}")
+            self.send_json({'error': f'Oura API error {e.code}: {error_body}'})
+        except Exception as e:
+            print(f"[OURA] Exception: {traceback.format_exc()}")
+            self.send_json({'error': str(e)})
 
     def handle_analyze(self):
         try:
@@ -52,18 +96,8 @@ class Handler(SimpleHTTPRequestHandler):
                 'messages': [{
                     'role': 'user',
                     'content': [
-                        {
-                            'type': 'image',
-                            'source': {
-                                'type': 'base64',
-                                'media_type': data['mediaType'],
-                                'data': data['imageData']
-                            }
-                        },
-                        {
-                            'type': 'text',
-                            'text': prompt
-                        }
+                        {'type': 'image', 'source': {'type': 'base64', 'media_type': data['mediaType'], 'data': data['imageData']}},
+                        {'type': 'text', 'text': prompt}
                     ]
                 }]
             }).encode('utf-8')
@@ -83,34 +117,32 @@ class Handler(SimpleHTTPRequestHandler):
                 result = json.loads(resp.read())
 
             print(f"[API] Успешно!")
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps(result).encode('utf-8'))
+            self.send_json(result)
 
         except urllib.error.HTTPError as e:
             error_body = e.read().decode('utf-8')
             print(f"[API] HTTP Error {e.code}: {error_body}")
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps({'error': f'HTTP {e.code}: {error_body}'}).encode('utf-8'))
-
+            self.send_json({'error': f'HTTP {e.code}: {error_body}'}, status=500)
         except Exception as e:
             print(f"[API] Ошибка: {traceback.format_exc()}")
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
+            self.send_json({'error': str(e)}, status=500)
+
+    def send_json(self, data, status=200):
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.end_headers()
+        self.wfile.write(json.dumps(data).encode('utf-8'))
 
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         super().end_headers()
 
+    def log_message(self, format, *args):
+        print(f"[HTTP] {args[0]} {args[1]}")
+
 port = int(os.environ.get('PORT', 8080))
 print(f'Сервер запущен на порту {port}')
-print(f'API ключ установлен: {"Да" if ANTHROPIC_API_KEY else "НЕТ!"}')
+print(f'API ключ: {"Да" if ANTHROPIC_API_KEY else "НЕТ!"}')
+print(f'Oura токен: {"Да" if OURA_TOKEN else "НЕТ"}')
 HTTPServer(('0.0.0.0', port), Handler).serve_forever()

@@ -391,12 +391,91 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
     </div>
 
-    <!-- СОН (заглушка) -->
+    <!-- СОН -->
     <div id="sec-sleep" class="sec">
-      <div class="card" style="text-align:center;padding:30px 20px;">
-        <div style="font-size:48px;margin-bottom:16px;">🌙</div>
-        <div style="font-size:15px;font-weight:500;margin-bottom:8px;">Сон</div>
-        <div style="font-size:12px;opacity:0.6;line-height:1.6;">Скоро появится трекер сна. После покупки Oura Ring данные будут синхронизироваться автоматически.</div>
+      <div class="card" style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:20px;">💍</div>
+            <div>
+              <div style="font-size:14px;font-weight:500;color:#fff;">Oura Ring</div>
+              <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px;" id="oura-sync-time">Нажми для синхронизации</div>
+            </div>
+          </div>
+          <button onclick="syncOura()" style="font-size:11px;background:rgba(255,255,255,.1);padding:6px 12px;border-radius:20px;border:none;color:#fff;cursor:pointer;" id="oura-sync-btn">↻ Синхр.</button>
+        </div>
+      </div>
+
+      <div id="oura-loading" style="display:none;" class="card" >
+        <div style="text-align:center;padding:20px;font-size:13px;color:var(--tg-theme-hint-color,#888);">🔄 Загружаем данные...</div>
+      </div>
+
+      <div id="oura-data" style="display:none;flex-direction:column;gap:10px;">
+        <div class="card">
+          <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:12px;">Прошлой ночью</div>
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px;">
+            <div style="position:relative;width:80px;height:80px;flex-shrink:0;">
+              <svg width="80" height="80" viewBox="0 0 80 80" style="transform:rotate(-90deg);">
+                <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(88,86,214,.15)" stroke-width="7"/>
+                <circle id="oura-ring-circle" cx="40" cy="40" r="32" fill="none" stroke="#5856D6" stroke-width="7" stroke-dasharray="0 201" stroke-linecap="round"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div style="font-size:18px;font-weight:500;color:#5856D6;" id="oura-score">—</div>
+                <div style="font-size:8px;color:var(--tg-theme-hint-color,#888);">score</div>
+              </div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:18px;font-weight:500;color:var(--tg-theme-text-color,#111);margin-bottom:2px;" id="oura-duration">—</div>
+              <div style="font-size:11px;color:var(--tg-theme-hint-color,#888);margin-bottom:4px;" id="oura-times">—</div>
+              <div style="font-size:12px;font-weight:500;" id="oura-status">—</div>
+            </div>
+          </div>
+
+          <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);margin-bottom:6px;">Фазы сна</div>
+          <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;gap:1px;margin-bottom:4px;" id="oura-phases-bar"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;" id="oura-phases-legend"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
+          <div class="card" style="padding:12px;">
+            <div style="font-size:16px;margin-bottom:4px;">❤️</div>
+            <div style="font-size:15px;font-weight:500;color:var(--tg-theme-text-color,#111);" id="oura-hr">—</div>
+            <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">ЧСС во сне</div>
+          </div>
+          <div class="card" style="padding:12px;">
+            <div style="font-size:16px;margin-bottom:4px;">⚡</div>
+            <div style="font-size:15px;font-weight:500;color:var(--tg-theme-text-color,#111);" id="oura-hrv">—</div>
+            <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">HRV</div>
+          </div>
+          <div class="card" style="padding:12px;">
+            <div style="font-size:16px;margin-bottom:4px;">😮‍💨</div>
+            <div style="font-size:15px;font-weight:500;color:var(--tg-theme-text-color,#111);" id="oura-breath">—</div>
+            <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">Дыхание</div>
+          </div>
+          <div class="card" style="padding:12px;">
+            <div style="font-size:16px;margin-bottom:4px;">🌡️</div>
+            <div style="font-size:15px;font-weight:500;color:var(--tg-theme-text-color,#111);" id="oura-temp">—</div>
+            <div style="font-size:10px;color:var(--tg-theme-hint-color,#888);">Темп. тела</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">История (7 дней)</div>
+          <div id="oura-history"></div>
+        </div>
+      </div>
+
+      <div id="oura-error" style="display:none;" class="card">
+        <div style="text-align:center;padding:16px;">
+          <div style="font-size:32px;margin-bottom:8px;">⚠️</div>
+          <div style="font-size:13px;color:var(--tg-theme-text-color,#111);margin-bottom:4px;">Нет данных</div>
+          <div style="font-size:11px;color:var(--tg-theme-hint-color,#888);" id="oura-error-text">Убедись что кольцо синхронизировано</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">Отход до 23:00</div>
+        <div style="font-size:13px;" id="sleep-23-status">Данные появятся после синхронизации</div>
       </div>
     </div>
 
@@ -639,6 +718,7 @@ function goTab(name,btn){
   document.getElementById('hsub').textContent=subs[name]||'';
   if(name==='workout') renderAll();
   if(name==='dash'){renderDash();renderTasks();}
+  if(name==='sleep') initOura();
   if(name==='bads') initBads();
 }
 
@@ -1674,6 +1754,134 @@ function confirmManualFood(text, status, meal){
 }
 
 renderNutritionToday();
+
+// ======= OURA =======
+async function syncOura(){
+  const btn=document.getElementById('oura-sync-btn');
+  const timeEl=document.getElementById('oura-sync-time');
+  btn.textContent='↻ Загрузка...';
+  btn.disabled=true;
+  document.getElementById('oura-loading').style.display='block';
+  document.getElementById('oura-data').style.display='none';
+  document.getElementById('oura-error').style.display='none';
+  try{
+    const resp=await fetch('/api/sleep');
+    const data=await resp.json();
+    if(data.error){throw new Error(data.error);}
+    renderOuraData(data);
+    timeEl.textContent='Синхронизировано: '+new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    localStorage.setItem('oura_cache',JSON.stringify({data,time:Date.now()}));
+  }catch(e){
+    document.getElementById('oura-error').style.display='block';
+    document.getElementById('oura-error-text').textContent=e.message;
+  }
+  document.getElementById('oura-loading').style.display='none';
+  btn.textContent='↻ Синхр.';
+  btn.disabled=false;
+}
+
+function renderOuraData(data){
+  const sleepArr=data.sleep||[];
+  const scoresArr=data.scores||[];
+  if(!sleepArr.length){
+    document.getElementById('oura-error').style.display='block';
+    return;
+  }
+
+  // Latest sleep
+  const latest=sleepArr[sleepArr.length-1];
+  const latestScore=scoresArr[scoresArr.length-1];
+  const score=latestScore?.score||0;
+
+  // Score ring
+  const arc=Math.round(score/100*201);
+  document.getElementById('oura-ring-circle').setAttribute('stroke-dasharray',`${arc} 201`);
+  document.getElementById('oura-score').textContent=score;
+
+  // Duration
+  const durSec=latest.total_sleep_duration||0;
+  const durH=Math.floor(durSec/3600);
+  const durM=Math.floor((durSec%3600)/60);
+  document.getElementById('oura-duration').textContent=`${durH}ч ${durM}мин`;
+
+  // Times
+  const bedtime=latest.bedtime_start?new Date(latest.bedtime_start).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):'—';
+  const waketime=latest.bedtime_end?new Date(latest.bedtime_end).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}):'—';
+  document.getElementById('oura-times').textContent=`${bedtime} → ${waketime}`;
+
+  // Status
+  const statusEl=document.getElementById('oura-status');
+  if(score>=85){statusEl.textContent='Отличный сон 🔥';statusEl.style.color='#27ae60';}
+  else if(score>=70){statusEl.textContent='Хороший сон ✓';statusEl.style.color='#27ae60';}
+  else if(score>=55){statusEl.textContent='Нормальный сон';statusEl.style.color='#d97706';}
+  else{statusEl.textContent='Плохой сон ⚠️';statusEl.style.color='#dc2626';}
+
+  // Phases
+  const deep=latest.deep_sleep_duration||0;
+  const rem=latest.rem_sleep_duration||0;
+  const light=latest.light_sleep_duration||0;
+  const awake=latest.awake_time||0;
+  const total=deep+rem+light+awake||1;
+  const bar=document.getElementById('oura-phases-bar');
+  bar.innerHTML=`
+    <div style="flex:${deep};background:#5856D6;"></div>
+    <div style="flex:${rem};background:#34C759;"></div>
+    <div style="flex:${light};background:#007AFF;"></div>
+    <div style="flex:${awake};background:#FF9500;"></div>`;
+  const legend=document.getElementById('oura-phases-legend');
+  const fmtMin=s=>s?`${Math.floor(s/3600)}ч ${Math.floor((s%3600)/60)}м`:'—';
+  legend.innerHTML=`
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tg-theme-hint-color,#888);"><div style="width:8px;height:8px;border-radius:2px;background:#5856D6;"></div>Глубокий ${fmtMin(deep)}</div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tg-theme-hint-color,#888);"><div style="width:8px;height:8px;border-radius:2px;background:#34C759;"></div>REM ${fmtMin(rem)}</div>
+    <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--tg-theme-hint-color,#888);"><div style="width:8px;height:8px;border-radius:2px;background:#007AFF;"></div>Лёгкий ${fmtMin(light)}</div>`;
+
+  // Metrics
+  document.getElementById('oura-hr').textContent=latest.average_heart_rate?Math.round(latest.average_heart_rate)+' уд/мин':'—';
+  document.getElementById('oura-hrv').textContent=latest.average_hrv?Math.round(latest.average_hrv)+' мс':'—';
+  document.getElementById('oura-breath').textContent=latest.average_breath?latest.average_breath.toFixed(1)+'/мин':'—';
+  document.getElementById('oura-temp').textContent=latest.skin_temp_delta?(latest.skin_temp_delta>0?'+':'')+latest.skin_temp_delta.toFixed(1)+'°C':'—';
+
+  // History
+  const hist=document.getElementById('oura-history');
+  const days=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+  hist.innerHTML=scoresArr.slice(-7).reverse().map(s=>{
+    const d=new Date(s.day);
+    const sc=s.score||0;
+    const color=sc>=85?'#27ae60':sc>=70?'#5856D6':sc>=55?'#d97706':'#dc2626';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid rgba(0,0,0,.05);">
+      <div style="font-size:12px;color:var(--tg-theme-text-color,#111);">${days[d.getDay()]}, ${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-size:12px;font-weight:500;color:${color};">${sc} pts</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // 23:00 check
+  if(latest.bedtime_start){
+    const bedH=new Date(latest.bedtime_start).getHours();
+    const bedMin=new Date(latest.bedtime_start).getMinutes();
+    const bedTotal=bedH*60+bedMin;
+    const el=document.getElementById('sleep-23-status');
+    if(bedTotal<=23*60){el.textContent=`✅ Лёг в ${bedtime} — отлично, до 23:00!`;el.style.color='#27ae60';}
+    else if(bedTotal<=24*60){el.textContent=`⚠️ Лёг в ${bedtime} — немного позже 23:00`;el.style.color='#d97706';}
+    else{el.textContent=`❌ Лёг в ${bedtime} — слишком поздно`;el.style.color='#dc2626';}
+  }
+
+  document.getElementById('oura-data').style.display='flex';
+}
+
+// Load cached data on init
+function initOura(){
+  const cache=localStorage.getItem('oura_cache');
+  if(cache){
+    const {data,time}=JSON.parse(cache);
+    if(Date.now()-time<3600000){
+      renderOuraData(data);
+      document.getElementById('oura-sync-time').textContent='Из кэша · '+new Date(time).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
+    }
+  }
+}
+initOura();
 
 // ======= ЗАДАЧИ =======
 let customTasks = JSON.parse(localStorage.getItem('custom_tasks') || '{}');
