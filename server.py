@@ -80,6 +80,8 @@ class Handler(SimpleHTTPRequestHandler):
             try:
                 result['stress'] = oura_get('daily_stress', start_date, end_date)
                 print(f"[OURA] Стресс: {len(result['stress'])} записей")
+                if result['stress']:
+                    print(f"[OURA] Стресс пример: {result['stress'][-1]}")
             except Exception as e:
                 print(f"[OURA] Стресс ошибка: {e}")
                 result['stress'] = []
