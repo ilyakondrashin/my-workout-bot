@@ -2217,8 +2217,10 @@ ${sleepScoreVal && sleepScoreVal < 60 ? '⚠️ ПЛОХОЙ СОН: сокра�
     });
     const data = await resp.json();
     const text = data.content?.[0]?.text||'{}';
+    console.log('[SCHEDULE] Raw response:', text);
     const clean = text.replace(/```json|```/g,'').trim();
     const result = JSON.parse(clean);
+    console.log('[SCHEDULE] Parsed:', JSON.stringify(result));
     
     const schedule = {
       date: todayKey,
