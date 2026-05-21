@@ -1080,10 +1080,11 @@ function renderDashToday(){
   const recovEl=document.getElementById('dash-recov-val');
   const stressBarEl=document.getElementById('dash-stress-bar');
   const recovBarEl=document.getElementById('dash-recov-bar');
-  if(stressEl && latestStress){
-    const stressMin=Math.round((latestStress.stress_high||0)/60);
+  if(latestStress){
+    // Oura возвращает stress_high и recovery_high в секундах
+    const stressMin=Math.round((latestStress.stress_high||latestStress.y_high||0)/60);
     const recovMin=Math.round((latestStress.recovery_high||0)/60);
-    stressEl.textContent=stressMin+'м';
+    if(stressEl) stressEl.textContent=stressMin+'м';
     if(recovEl) recovEl.textContent=recovMin+'м';
     const total2=stressMin+recovMin||1;
     if(stressBarEl) stressBarEl.style.width=Math.round(stressMin/total2*100)+'%';
@@ -2137,9 +2138,9 @@ function getLeastRecentBiomech(list){
 async function generateSchedule(){
   const todayKey = fmt(today);
   
-  // Check if schedule already generated today
+  // Check if schedule already generated today and has tasks
   const saved = JSON.parse(localStorage.getItem('daily_schedule')||'{}');
-  if(saved.date === todayKey) return saved.tasks;
+  if(saved.date === todayKey && saved.tasks && saved.tasks.length > 0) return saved.tasks;
 
   // Show loading
   document.getElementById('tasks-list').innerHTML = '<div style="text-align:center;padding:16px;font-size:12px;color:var(--tg-theme-hint-color,#888);">🤖 Claude составляет расписание...</div>';
@@ -2356,7 +2357,12 @@ function toggleTask(id){
 
 function resetSchedule(){
   localStorage.removeItem('daily_schedule');
-  renderTasks();
+  const btn=document.querySelector('[onclick="resetSchedule()"]');
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  setTimeout(()=>{
+    renderTasks();
+    if(btn){btn.textContent='↻ Обновить';btn.disabled=false;}
+  },100);
 }
 
 function addCustomTask(){
