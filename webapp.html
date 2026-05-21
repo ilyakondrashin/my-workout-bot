@@ -106,6 +106,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <div style="font-size:12px;opacity:.8;margin-bottom:4px;">Счёт дня</div>
               <div style="font-size:32px;font-weight:500;" id="dash-score">0<span style="font-size:16px;opacity:.7;">/100</span></div>
               <div style="font-size:11px;opacity:.7;margin-top:2px;" id="dash-score-label">Начни день!</div>
+              <div id="dash-readiness-badge" style="display:none;margin-top:6px;background:rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:500;color:#fff;display:inline-block;">⚡ Готовность: —</div>
             </div>
             <div style="position:relative;width:64px;height:64px;flex-shrink:0;">
               <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
@@ -152,27 +153,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </div>
         </div>
 
-        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;">
-          <div style="border-radius:10px;padding:12px;background:#EFF6FF;border:0.5px solid #BFDBFE;">
-            <div style="font-size:18px;margin-bottom:4px;">⚡</div>
-            <div style="font-size:10px;font-weight:500;color:#2563EB;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Готовность</div>
-            <div style="font-size:18px;font-weight:500;" id="dash-readiness">—</div>
-            <div style="font-size:10px;opacity:.6;" id="dash-readiness-lbl">Oura Readiness</div>
-            <div style="height:4px;border-radius:2px;margin-top:6px;background:#BFDBFE;overflow:hidden;"><div id="dash-readiness-bar" style="height:100%;border-radius:2px;background:#2563EB;width:0%;"></div></div>
-          </div>
-          <div style="border-radius:10px;padding:12px;background:#FEF2F2;border:0.5px solid #FECACA;">
-            <div style="font-size:18px;margin-bottom:4px;">😤</div>
-            <div style="font-size:10px;font-weight:500;color:#DC2626;opacity:.7;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Стресс / Восст.</div>
-            <div style="display:flex;align-items:baseline;gap:4px;">
-              <div style="font-size:15px;font-weight:500;color:#DC2626;" id="dash-stress-val">—</div>
-              <div style="font-size:11px;opacity:.5;">/</div>
-              <div style="font-size:15px;font-weight:500;color:#27ae60;" id="dash-recov-val">—</div>
-            </div>
-            <div style="display:flex;gap:2px;margin-top:6px;height:4px;border-radius:2px;overflow:hidden;background:#FECACA;">
-              <div id="dash-stress-bar" style="height:100%;background:#DC2626;border-radius:2px;width:0%;"></div>
-            </div>
-          </div>
-        </div>
+
 
         <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid rgba(0,0,0,.06);">
           <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:10px;">Сон — отход до 23:00</div>
@@ -214,7 +195,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="background:#fff;border-radius:12px;padding:14px;border:0.5px solid rgba(0,0,0,.06);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
             <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;">✅ Задачи на сегодня</div>
-            <div style="font-size:11px;font-weight:500;color:#5856D6;" id="tasks-progress-label">0/0</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="font-size:11px;font-weight:500;color:#5856D6;" id="tasks-progress-label">0/0</div>
+              <button onclick="resetSchedule()" style="font-size:10px;padding:3px 8px;background:rgba(88,86,214,.08);border:0.5px solid rgba(88,86,214,.2);border-radius:20px;color:#5856D6;cursor:pointer;border:none;">↻ Обновить</button>
+            </div>
           </div>
           <div style="background:rgba(0,0,0,.06);border-radius:4px;height:5px;overflow:hidden;margin-bottom:12px;">
             <div id="tasks-progress-fill" style="height:100%;border-radius:4px;background:linear-gradient(90deg,#5856D6,#AF52DE);width:0%;transition:width .3s;"></div>
@@ -504,10 +488,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
 
-      <div class="card">
-        <div style="font-size:10px;font-weight:500;color:var(--tg-theme-hint-color,#888);text-transform:uppercase;letter-spacing:.3px;margin-bottom:8px;">Отход до 23:00</div>
-        <div style="font-size:13px;" id="sleep-23-status">Данные появятся после синхронизации</div>
-      </div>
+
     </div>
 
     <!-- ЗАПИСЬ -->
@@ -1080,12 +1061,18 @@ function renderDashToday(){
   const readyEl=document.getElementById('dash-readiness');
   const readyBarEl=document.getElementById('dash-readiness-bar');
   const readyLblEl=document.getElementById('dash-readiness-lbl');
-  if(readyEl && latestReadiness){
+  const readyBadge=document.getElementById('dash-readiness-badge');
+  if(latestReadiness){
     const rs=latestReadiness.score||0;
-    readyEl.textContent=rs+' pts';
+    const readyColor=rs>=85?'#27ae60':rs>=70?'#2563EB':rs>=55?'#d97706':'#dc2626';
+    const readyLabel=rs>=85?'Отличная ✓':rs>=70?'Хорошая':rs>=55?'Умеренная':'Низкая';
+    if(readyEl){readyEl.textContent=rs+' pts';readyEl.style.color=readyColor;}
     if(readyBarEl) readyBarEl.style.width=rs+'%';
-    if(readyLblEl) readyLblEl.textContent=rs>=85?'Отличная ✓':rs>=70?'Хорошая':rs>=55?'Умеренная':'Низкая';
-    readyEl.style.color=rs>=85?'#27ae60':rs>=70?'#2563EB':rs>=55?'#d97706':'#dc2626';
+    if(readyLblEl) readyLblEl.textContent=readyLabel;
+    if(readyBadge){
+      readyBadge.style.display='inline-block';
+      readyBadge.textContent=`⚡ Готовность: ${rs} — ${readyLabel}`;
+    }
   }
 
   // Стресс / Восстановление
@@ -1106,7 +1093,13 @@ function renderDashToday(){
   // Общий счёт (теперь с Oura)
   const wScore=Math.min(todayWorkouts*20,30);
   const bScore=Math.round(bPct*0.25);
-  const sScore=todaySleep?20:0;
+  // Сон — учитываем время отхода
+  let sScore=0;
+  if(todaySleep){
+    const [bH,bM]=todaySleep.sleep.split(':').map(Number);
+    const adjustedBed=(bH<6?bH+24:bH)*60+bM;
+    sScore=adjustedBed<=23*60?20:adjustedBed<=23*60+30?15:adjustedBed<=24*60?10:5;
+  }
   const readyScore=latestReadiness?Math.round((latestReadiness.score||0)*0.15):0;
   const stressScore=latestStress?Math.max(0,10-Math.round((latestStress.stress_high||0)/600)):0;
   const total=Math.min(wScore+bScore+sScore+readyScore+stressScore,100);
@@ -2358,6 +2351,11 @@ function toggleTask(id){
     customTasks[todayKey][idx].done = !customTasks[todayKey][idx].done;
     saveCustomTasks();
   }
+  renderTasks();
+}
+
+function resetSchedule(){
+  localStorage.removeItem('daily_schedule');
   renderTasks();
 }
 
