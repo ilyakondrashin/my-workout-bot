@@ -599,6 +599,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 const tg=window.Telegram?.WebApp;
 if(tg){tg.expand();tg.ready();}
 
+// Защита — только для владельца
+(function checkAccess(){
+  const OWNER_ID = 565695888;
+  if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user){
+    const userId = tg.initDataUnsafe.user.id;
+    if(userId !== OWNER_ID){
+      document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:system-ui;text-align:center;padding:20px;"><div><div style="font-size:48px;margin-bottom:16px;">🔒</div><div style="font-size:16px;font-weight:500;margin-bottom:8px;">Доступ закрыт</div><div style="font-size:13px;opacity:0.6;">Это личное приложение Ильи</div></div></div>';
+      return;
+    }
+  }
+})();
+
 function range(s,e){const r=[];for(let i=s;i<=e;i++)r.push(i);return r;}
 
 const CATALOG={
